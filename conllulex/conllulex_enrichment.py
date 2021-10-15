@@ -324,13 +324,3 @@ def main(conllulex_input_path, conllulex_output_path, subtasks):
 
     with open(conllulex_output_path, "w") as f:
         f.write("".join(s.serialize() for s in sentences))
-
-
-if __name__ == "__main__":
-    import argparse
-
-    ap = argparse.ArgumentParser()
-    ap.add_argument("conllulex_input_path")
-    ap.add_argument("conllulex_output_path")
-    args = ap.parse_args()
-    main(**vars(args))
