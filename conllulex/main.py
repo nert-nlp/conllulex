@@ -5,6 +5,7 @@ import click
 from conllulex import conllulex_enrichment
 from conllulex.config import CORPUS_CFG
 from conllulex.conllulex_to_json import convert_conllulex_to_json
+from conllulex.govobj import govobj_enhance
 
 
 @click.group()
@@ -134,8 +135,23 @@ def conllulex2json_pastrie():
     top()
 
 
+@click.command(
+    help="Extend JSON file with govobj information."
+)
+@click.argument("input_path")
+@click.argument("output_path")
+@click.option(
+    "--edeps/--no-edeps",
+    help="Whether the corpus has enhanced dependencies available or not.",
+    default=True
+)
+def govobj(input_path, output_path, edeps):
+    govobj_enhance(input_path, output_path, edeps)
+
+
 top.add_command(enrich)
 top.add_command(conllulex2json)
+top.add_command(govobj)
 
 if __name__ == "__main__":
     top()
