@@ -1,13 +1,20 @@
 import json
 import re
+import sys
 from collections import defaultdict
+from functools import partial
 from itertools import chain
 from pprint import pprint, pformat
 from typing import Iterable
 
 from conllu.serializer import serialize_field
 
+from conllulex.config import get_config
+from conllulex.mwe_render import render
 from conllulex.reading import get_conllulex_tokenlists
+from conllulex.supersenses import ancestors, makesslabel
+from conllulex.lexcatter import supersenses_for_lexcat, ALL_LEXCATS
+from conllulex.tagging import sent_tags
 
 
 def _append_if_error(errors, sentence_id, test, explanation, token=None):
@@ -15,7 +22,7 @@ def _append_if_error(errors, sentence_id, test, explanation, token=None):
     If a test fails, append an error/warning dictionary to errors.
 
     Args:
-        errors: a list of errors or warnings
+        errors: a list of errors
         sentence_id: ID of the sentence this applies to
         test: boolean from a checked expression
         explanation: user-friendly string explaining the error found by the flag
@@ -29,7 +36,6 @@ def _append_if_error(errors, sentence_id, test, explanation, token=None):
 
 def _load_json(input_path, ss_mapper, include_morph_head_deprel, include_misc):
     errors = []
-    warnings = []
     modified_sentences = []
 
     with open(input_path, "r", encoding="utf-8") as f:
@@ -69,10 +75,10 @@ def _load_json(input_path, ss_mapper, include_morph_head_deprel, include_misc):
 
         modified_sentences.append(sentence)
 
-    return modified_sentences, errors, warnings
+    return modified_sentences, errors
 
 
-def _store_conllulex(sentence, token_list, errors, warnings, store_conllulex_string):
+def _store_conllulex(sentence, token_list, errors, store_conllulex_string):
     sentence_lines = token_list.serialize()
     if store_conllulex_string == "none":
         return
@@ -85,7 +91,7 @@ def _store_conllulex(sentence, token_list, errors, warnings, store_conllulex_str
         sentence["conllulex"] = "\n".join(sentence_lines)
 
 
-def _store_metadata(sentence, token_list, errors, warnings):
+def _store_metadata(sentence, token_list, errors):
     banned_keys = ["toks", "swes", "smwes", "wmwes"]
     metadata = token_list.metadata
     _append_if_error(
@@ -99,7 +105,7 @@ def _store_metadata(sentence, token_list, errors, warnings):
             sentence[k] = v
 
 
-def _store_morph_and_deps(token_dict, token, errors, warnings, is_ellipsis, is_supertoken, sent_id):
+def _store_morph_and_deps(token_dict, token, errors, is_ellipsis, is_supertoken, sent_id):
     token_dict["feats"] = serialize_field(token["feats"])
     token_dict["head"] = token["head"]
     token_dict["deprel"] = token["deprel"]
@@ -111,7 +117,7 @@ def _store_morph_and_deps(token_dict, token, errors, warnings, is_ellipsis, is_s
             sent_id,
             is_ellipsis or is_supertoken,
             f"Only ellipsis tokens and supertokens are allowed to not have a head.",
-            token=token
+            token=token,
         )
         token_dict["head"] = None
     if token["deprel"] == "_":
@@ -120,12 +126,12 @@ def _store_morph_and_deps(token_dict, token, errors, warnings, is_ellipsis, is_s
             sent_id,
             is_ellipsis or is_supertoken,
             f"Only ellipsis tokens and supertokens are allowed to not have a deprel",
-            token=token
+            token=token,
         )
         token_dict["deprel"] = None
 
 
-def _store_conllulex_columns(sentence, token_dict, token, errors, warnings, ss_mapper):
+def _store_conllulex_columns(sentence, token_dict, token, errors, ss_mapper):
     sent_id = sentence["sent_id"]
     token_num = token_dict["#"]
 
@@ -139,7 +145,7 @@ def _store_conllulex_columns(sentence, token_dict, token, errors, warnings, ss_m
             sentence["smwes"][smwe_group]["toknums"].index(token_num) == smwe_position - 1,
             f"SMWE tokens must have positions labeled in strictly increasing order, "
             f"but an out-of-order indexing exists.",
-            token=token
+            token=token,
         )
         if smwe_position == 1:
             _append_if_error(
@@ -147,12 +153,10 @@ def _store_conllulex_columns(sentence, token_dict, token, errors, warnings, ss_m
                 sent_id,
                 " " in token["lexlemma"],
                 f"Token is the beginning of a SMWE, but lexlemma doesn't appear to have multiple tokens in it. ",
-                token=token
+                token=token,
             )
             sentence["smwes"][smwe_group]["lexlemma"] = token["lexlemma"]
-            _append_if_error(
-                errors, sent_id, token["lexcat"] != "_", f"SMWE token lacks a lexcat. ", token=token
-            )
+            _append_if_error(errors, sent_id, token["lexcat"] != "_", f"SMWE token lacks a lexcat. ", token=token)
             sentence["smwes"][smwe_group]["lexcat"] = token["lexcat"]
             sentence["smwes"][smwe_group]["ss"] = ss_mapper(token["ss"]) if token["ss"] != "_" else None
             sentence["smwes"][smwe_group]["ss2"] = ss_mapper(token["ss2"]) if token["ss2"] != "_" else None
@@ -162,14 +166,14 @@ def _store_conllulex_columns(sentence, token_dict, token, errors, warnings, ss_m
                 sent_id,
                 token["lexlemma"] == "_",
                 f"Non-initial tokens in SMWEs should always have lexlemma '_'.",
-                token=token
+                token=token,
             )
             _append_if_error(
                 errors,
                 sent_id,
                 token["lexcat"] == "_",
                 f"Non-initial tokens in SMWEs should always have lexcat '_'.",
-                token=token
+                token=token,
             )
     else:
         token_dict["smwe"] = None
@@ -178,7 +182,7 @@ def _store_conllulex_columns(sentence, token_dict, token, errors, warnings, ss_m
             sent_id,
             token["lexlemma"] == token["lemma"],
             f"Single-word expression lemma \"{token['lexlemma']}\" doesn't match token lemma \"{token['lemma']}\"",
-            token=token
+            token=token,
         )
         sentence["swes"][token_num]["lexlemma"] = token["lexlemma"]
         _append_if_error(errors, sent_id, token["lexcat"] != "_", f"SWE token must have lexcat.", token=token)
@@ -197,7 +201,7 @@ def _store_conllulex_columns(sentence, token_dict, token, errors, warnings, ss_m
             sentence["wmwes"][wmwe_group]["toknums"].index(token_num) == wmwe_position - 1,
             f"WMWE tokens must have positions labeled in strictly increasing order, "
             f"but an out-of-order indexing exists.",
-            token=token
+            token=token,
         )
         if wmwe_position == 1:
             _append_if_error(
@@ -212,14 +216,14 @@ def _store_conllulex_columns(sentence, token_dict, token, errors, warnings, ss_m
                 sent_id,
                 token["wlemma"] == "_",
                 f"Non-initial tokens in WMWEs should always have lexlemma '_'.",
-                token=token
+                token=token,
             )
             _append_if_error(
                 errors,
                 sent_id,
                 token["wcat"] == "_",
                 f"Non-initial tokens in SMWEs should always have wcat '_'.",
-                token=token
+                token=token,
             )
     else:
         token_dict["wmwe"] = None
@@ -228,14 +232,14 @@ def _store_conllulex_columns(sentence, token_dict, token, errors, warnings, ss_m
             sent_id,
             token["wlemma"] == "_",
             f"wlemma should be _ if token does not belong to WMWE, but token has wlemma value: {token['wlemma']}",
-            token=token
+            token=token,
         )
         _append_if_error(
             errors,
             sent_id,
             token["wcat"] == "_",
             f"wcat should be _ if token does not belong to WMWE, but token has wcat value: {token['wcat']}",
-            token=token
+            token=token,
         )
 
     lextag = token["lextag"]
@@ -251,14 +255,10 @@ def _load_sentences(
     input_path,
     include_morph_deps,
     include_misc,
-    validate_upos_lextag,
-    validate_type,
     store_conllulex_string,
-    override_mwe_render,
     ss_mapper,
 ):
     errors = []
-    warnings = []
     sentences = []
     if input_path.endswith(".json"):
         return _load_json(input_path, ss_mapper, include_morph_deps, include_misc)
@@ -268,7 +268,7 @@ def _load_sentences(
         sentence = {
             "sent_id": sent_id,
         }
-        _store_metadata(sentence, token_list, errors, warnings)
+        _store_metadata(sentence, token_list, errors)
         sentence.update(
             {
                 "toks": [],  # excludes ellipsis tokens, to make indexing convenient
@@ -294,7 +294,7 @@ def _load_sentences(
                 "wmwes": defaultdict(lambda: {"lexlemma": None, "toknums": []}),
             }
         )
-        _store_conllulex(sentence, token_list, errors, warnings, store_conllulex_string)
+        _store_conllulex(sentence, token_list, errors, store_conllulex_string)
 
         for token in token_list:
             token_dict = {}
@@ -318,7 +318,7 @@ def _load_sentences(
             )
 
             if include_morph_deps:
-                _store_morph_and_deps(token_dict, token, errors, warnings, is_ellipsis, is_supertoken, sent_id)
+                _store_morph_and_deps(token_dict, token, errors, is_ellipsis, is_supertoken, sent_id)
 
             if include_misc:
                 token_dict["misc"] = serialize_field(token["misc"])
@@ -328,14 +328,14 @@ def _load_sentences(
                     token_dict[nullable_column] = None
 
             if not is_ellipsis and not is_supertoken:
-                _store_conllulex_columns(sentence, token_dict, token, errors, warnings, ss_mapper)
+                _store_conllulex_columns(sentence, token_dict, token, errors, ss_mapper)
                 sentence["toks"].append(token_dict)
             elif is_ellipsis:
                 sentence["etoks"].append(token_dict)
 
         sentences.append(sentence)
 
-    return sentences, errors, warnings
+    return sentences, errors
 
 
 def _write_json(sents, output_path):
@@ -344,17 +344,14 @@ def _write_json(sents, output_path):
 
 
 def format_error(error):
-    s = (
-        f"{error['sentence_id']}:"
-        f"  {error['explanation']}"
-    )
+    s = f"{error['sentence_id']}:" f" {error['explanation']}"
     if error["token"] is not None:
-        s += f"  Token: {pformat(dict(error['token']))}'"
+        s += f"\n  Token: {pformat(dict(error['token']))}'"
     s += "\n"
     return s
 
 
-def _write_errors(errors, warnings):
+def _write_errors(errors):
     print("Errors were found during validation:")
 
     print("=" * 80)
@@ -364,14 +361,180 @@ def _write_errors(errors, warnings):
         print(f"- Error {i}.")
         print(format_error(error))
 
-    if len(warnings) > 0:
-        print("=" * 80)
-        print("= Warnings")
-        print("=" * 80)
-    for warning in warnings:
-        print(format_error(warning))
+    print(f"Finished with {len(errors)} errors. No output has been written.")
 
-    print(f"Finished with {len(errors)} errors and {len(warnings)} warnings. No output has been written.")
+
+def _validate_sentences(corpus, sentences, errors, validate_upos_lextag, validate_type, override_mwe_render):
+    lexcat_tbd_count = 0
+
+    lang_config, corpus_config = get_config(corpus)
+
+    for sentence in sentences:
+        sent_id = sentence["sent_id"]
+        assert_ = partial(_append_if_error, errors, sent_id)
+        for i, tok in enumerate(sentence["toks"], 1):
+            assert_(tok["#"], "Tokens should be numbered from 1, in order")
+
+        # check that MWEs are numbered from 1 based on first token offset
+        xmwes = [(e["toknums"][0], "s", mwe_num) for mwe_num, e in sentence["smwes"].items()]
+        xmwes += [(e["toknums"][0], "w", mwe_num) for mwe_num, e in sentence["wmwes"].items()]
+        xmwes.sort()
+        for k, mwe in chain(sentence["smwes"].items(), sentence["wmwes"].items()):
+            assert_(int(k) - 1 < len(xmwes), f"MWE index {k} exceeds number of MWEs in the sentence")
+            assert_(xmwes[int(k) - 1][2] == k, f"MWEs are not numbered in the correct order")
+
+        # check that lexical & weak MWE lemmas are correct
+        lex_exprs_to_validate = chain(sentence["swes"].values(), sentence["smwes"].values()) if validate_type else []
+        for lex_expr in lex_exprs_to_validate:
+            assert_(
+                lex_expr["lexlemma"] == " ".join(sentence["toks"][i - 1]["lemma"] for i in lex_expr["toknums"]),
+                f"MWE lemma is incorrect: {lex_expr} vs. {sentence['toks'][lex_expr['toknums'][0]-1]}",
+                token=lex_expr,
+            )
+            lexcat = lex_expr["lexcat"]
+            if lexcat.endswith("!@"):
+                lexcat_tbd_count += 1
+
+            if lexcat.startswith("V") and "V" not in corpus_config["supersense_annotated"]:
+                valid_ss = set()
+            elif lexcat == "N" and "N" not in corpus_config["supersense_annotated"]:
+                valid_ss = set()
+            elif lexcat in ["P", "PP"] and "P" not in corpus_config["supersense_annotated"]:
+                valid_ss = set()
+            else:
+                valid_ss = supersenses_for_lexcat(lexcat)
+                if lexcat in ["P", "PP"] and "P" in corpus_config["supersense_annotated"]:
+                    valid_ss = valid_ss | lang_config["extra_prepositional_supersenses"]
+            if "V" in corpus_config["supersense_annotated"] and lexcat == "V":
+                assert_(
+                    len(lex_expr["toknums"]) == 1,
+                    f'Verbal MWE "{lex_expr["lexlemma"]}" lexcat must be subtyped (V.VID, etc., not V)',
+                    token=lex_expr,
+                )
+            ss, ss2 = lex_expr["ss"], lex_expr["ss2"]
+            if valid_ss:
+                if ss == "??":
+                    assert_(ss2 is None, "When using the '??' supersense annotation in ss, ss2 should be blank")
+                elif ss is None:
+                    assert_(False, f"Missing supersense annotation in lexical entry: {lex_expr}", token=lex_expr)
+                elif ss not in valid_ss:
+                    assert_(False, f"Invalid supersense(s) in lexical entry: {lex_expr}", token=lex_expr)
+                elif (lexcat in ("N", "V") or lexcat.startswith("V.")) and ss2 is not None:
+                    assert_(False, f"Noun/verb should not have ss2 annotation: {lex_expr}", token=lex_expr)
+                elif ss2 is not None and ss2 not in valid_ss:
+                    assert_(False, f"Invalid ss2: {lex_expr}", token=lex_expr)
+                elif ss is not None and ss.startswith("p."):
+                    assert_(
+                        ss2.startswith("p."),
+                        "Found an ss2 not prefixed with p. when ss was prefixed with p.",
+                        token=lex_expr,
+                    )
+                    if ss != ss2:
+                        assert_(
+                            ss2 not in lang_config["banned_functions"],
+                            f"{ss2} should never be function",
+                            token=lex_expr,
+                        )
+                        ss_ancestors, ss2_ancestors = ancestors(ss), ancestors(ss2)
+                        # there are just a few permissible combinations where one is the ancestor of the other
+                        if (ss, ss2) not in lang_config["permitted_ancestor_combos"]:
+                            assert_(ss not in ss2_ancestors, f"unexpected construal: {ss} ~> {ss2}", token=lex_expr)
+                            assert_(ss2 not in ss_ancestors, f"unexpected construal: {ss} ~> {ss2}", token=lex_expr)
+            else:
+                assert_(
+                    ss is None and ss2 is None and lexcat not in ("P", "INF.P", "PP", "POSS", "PRON.POSS"),
+                    f"Invalid supersense(s) in lexical entry",
+                    token=lex_expr,
+                )
+
+        # check lexcat on single-word expressions
+        for swe in sentence["swes"].values():
+            tok = sentence["toks"][swe["toknums"][0] - 1]
+            upos, xpos = tok["upos"], tok["xpos"]
+            lexcat = swe["lexcat"]
+            if lexcat.endswith("!@"):
+                continue
+            if lexcat not in ALL_LEXCATS:
+                assert_(not validate_type, f"invalid lexcat {lexcat} for single-word expression '{tok['word']}'")
+                continue
+            if (
+                validate_upos_lextag
+                and upos != lexcat
+                and (upos, lexcat) not in lang_config["allowed_mismatched_upos_lexcat_pairs"]
+            ):
+                mismatchOK = False
+                for f in lang_config["mismatched_lexcat_exception_checks"]:
+                    mismatchOK = mismatchOK or f(xpos, upos, tok["lemma"], swe["lexlemma"], lexcat)
+
+                assert_(
+                    mismatchOK,
+                    f"single-word expression '{tok['word']}' has lexcat {lexcat}, "
+                    f"which is incompatible with its upos {upos}",
+                )
+            if validate_type:
+                assert_(
+                    lexcat != "PP",
+                    f"PP should only apply to strong MWEs, but occurs for a single-word expression",
+                    token=tok,
+                )
+        for smwe in sentence["smwes"].values():
+            assert_(len(smwe["toknums"]) > 1, "SMWEs must have more than one token", token=smwe)
+            assert_(
+                smwe["lexlemma"] == " ".join(sentence["toks"][i - 1]["lemma"] for i in smwe["toknums"]),
+                "lexlemma appears incorrect for smwe",
+                token=smwe,
+            )
+        for wmwe in sentence["wmwes"].values():
+            assert_(len(wmwe["toknums"]) > 1, "WMWEs must have more than one token", token=wmwe)
+            assert_(
+                wmwe["lexlemma"] == " ".join(sentence["toks"][i - 1]["lemma"] for i in wmwe["toknums"]),
+                "lexlemma appears incorrect for wmwe",
+                token=wmwe,
+            )
+        # we already checked that noninitial tokens in an MWE have _ as their lemma
+
+        # check lextags
+        smwe_groups = [smwe["toknums"] for smwe in sentence["smwes"].values()]
+        wmwe_groups = [wmwe["toknums"] for wmwe in sentence["wmwes"].values()]
+        tagging = sent_tags(len(sentence["toks"]), sentence["mwe"], smwe_groups, wmwe_groups)
+        for tok, tag in zip(sentence["toks"], tagging):
+            full_lextag = tag
+            if tok["smwe"]:
+                smwe_number, position = tok["smwe"]
+                lex_expr = sentence["smwes"][smwe_number]
+            else:
+                position = None
+                lex_expr = sentence["swes"][tok["#"]]
+
+            if position is None or position == 1:
+                lexcat = lex_expr["lexcat"]
+                full_lextag += "-" + lexcat
+                ss_label = makesslabel(lex_expr)
+                if ss_label:
+                    full_lextag += "-" + ss_label
+
+                if tok["wmwe"]:
+                    wmwe_number, position = tok["wmwe"]
+                    wmwe = sentence["wmwes"][wmwe_number]
+                    wcat = wmwe["lexcat"]
+                    if wcat and position == 1:
+                        full_lextag += "+" + wcat
+
+            assert_(
+                tok["lextag"] == full_lextag,
+                f"the full tag at the end of the line is inconsistent with the rest of the line ({full_lextag} expected)",
+                token=tok,
+            )
+
+        # check rendered MWE string
+        s = render([tok["word"] for tok in sentence["toks"]], smwe_groups, wmwe_groups)
+        if sentence["mwe"] != s:
+            caveat = " (may be due to simplification)" if "$1" in sentence["mwe"] else ""
+            if override_mwe_render:
+                caveat += " (OVERRIDING)"
+                sentence["mwe"] = s
+            else:
+                print(f"MWE string mismatch{caveat}: {s}, {sentence['mwe']}, {sentence['sent_id']}", file=sys.stderr)
 
 
 def convert_conllulex_to_json(
@@ -402,26 +565,25 @@ def convert_conllulex_to_json(
         validate_type: Whether to validate SWE-specific or SMWE-specific tags that apply to the corresponding MWE type
         store_conllulex_string: Set to full to include all conllulex input lines as a string in the returned JSON,
             or set to toks to exclude ellipsis tokens and metadata lines
-        override_mwe_render: When set, compare the given `# mwe = ...` metadata to an automatically generated version,
-            print a warning, and use the automatically generated version in the output.
+        override_mwe_render: When not set to true, compare the given `# mwe = ...` metadata to an automatically
+            generated version and report an error if there is a mismatch. Otherwise, silently override.
         ss_mapper: A function to apply to supersense labels to replace them in the returned data structure. Applies to
             all supersense labels (nouns, verbs, prepositions). Not applied if the supersense slot is empty.
 
     Returns:
         Nothing
     """
-    sentences, errors, warnings = _load_sentences(
+    sentences, errors = _load_sentences(
         input_path,
         include_morph_deps,
         include_misc,
-        validate_upos_lextag,
-        validate_type,
         store_conllulex_string,
-        override_mwe_render,
         ss_mapper,
     )
 
+    _validate_sentences(corpus, sentences, errors, validate_upos_lextag, validate_type, override_mwe_render)
+
     if len(errors) > 0:
-        _write_errors(errors, warnings)
+        _write_errors(errors)
     else:
         _write_json(sentences, output_path)

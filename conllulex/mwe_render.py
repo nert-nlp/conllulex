@@ -2,7 +2,7 @@
 import sys, fileinput, json, re
 from itertools import chain
 
-from supersenses import makesslabel
+from conllulex.supersenses import makesslabel
 
 
 def render(ww, sgroups, wgroups, labels={}):

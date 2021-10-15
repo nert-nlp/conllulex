@@ -1,3 +1,5 @@
+import sys
+
 import click
 
 from conllulex import conllulex_enrichment
@@ -20,7 +22,7 @@ def top():
     "--corpus",
     "-c",
     type=click.Choice(CORPUS_CFG.keys(), case_sensitive=False),
-    help="The corpus contained in the conllulex file. " "Each corpus has a defined set of subtasks that it needs.",
+    help="The corpus contained in the conllulex file.",
     default="pastrie",
 )
 @click.option(
@@ -84,8 +86,8 @@ def enrich(input_path, output_path, corpus, subtasks):
 @click.option(
     "--override-mwe-render/--no-override-mwe-render",
     default=False,
-    help="When set, compare the given `# mwe = ...` metadata to an automatically generated version, "
-    "print a warning, and use the automatically generated version in the output.",
+    help="When not set to true, compare the given `# mwe = ...` metadata to an automatically"
+    "generated version and report an error if there is a mismatch. Otherwise, silently override.",
 )
 def conllulex2json(
     input_path,
@@ -109,6 +111,27 @@ def conllulex2json(
         store_conllulex_string=store_conllulex_string,
         override_mwe_render=override_mwe_render,
     )
+
+
+def conllulex2json_hindi():
+    sys.argv.insert(1, "conllulex2json")
+    sys.argv.insert(2, "--corpus")
+    sys.argv.insert(3, "hindi")
+    top()
+
+
+def conllulex2json_streusle():
+    sys.argv.insert(1, "conllulex2json")
+    sys.argv.insert(2, "--corpus")
+    sys.argv.insert(3, "streusle")
+    top()
+
+
+def conllulex2json_pastrie():
+    sys.argv.insert(1, "conllulex2json")
+    sys.argv.insert(2, "--corpus")
+    sys.argv.insert(3, "pastrie")
+    top()
 
 
 top.add_command(enrich)

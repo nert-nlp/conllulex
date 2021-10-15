@@ -7,8 +7,8 @@ from collections import defaultdict
 import conllu
 
 from conllulex.reading import get_conllulex_tokenlists
-from mwe_render import render
-from tagging import sent_tags
+from conllulex.mwe_render import render
+from conllulex.tagging import sent_tags
 
 
 # modified from streusle ----------------------------------------------------------------------
