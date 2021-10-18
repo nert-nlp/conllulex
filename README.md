@@ -2,9 +2,7 @@
 
 This is a port of some of the CoNLL-U-Lex utils from [STREUSLE](https://github.com/nert-nlp/streusle). 
 
-# Usage
-
-## Setup
+# Setup
 
 Clone to a local repository and pip install:
 
@@ -14,7 +12,7 @@ cd conllulex
 pip install -e .
 ```
 
-## Usage
+# Usage
 
 You will now have the following commands on your path:
 
@@ -33,7 +31,7 @@ Any changes you make to your local copy of the code will automatically
 be accounted for when you run these commands. You do **not** need to re-run
 `pip install -e .`.
 
-### CoNLL-U-Lex enrichment
+## CoNLL-U-Lex enrichment
 This takes a minimal `.conllulex` file and adds and corrects information. Refer to
 [`conllulex_enrichment.py`](./conllulex/conllulex_enrichment.py) for details, and
 configure the steps for your corpus under the `enrichment_subtasks` key.
@@ -44,7 +42,7 @@ Example invocation:
 conllulex-enrich --corpus hindi hindi.conllulex hindi_enriched.conllulex
 ```
 
-### CoNLL-U-Lex to JSON conversion
+## CoNLL-U-Lex to JSON conversion
 This converts a `.conllulex` file into the JSON format originally used by STREUSLE.
 If any validation errors are encountered, the program will report all errors and quit
 without writing any output. There are many options for this command--see `--help`.
@@ -53,7 +51,7 @@ without writing any output. There are many options for this command--see `--help
 conllulex2json --corpus pastrie pastrie.conllulex pastrie.json
 ```
 
-### Governor/Object information
+## Governor/Object information
 A JSON can be enriched with governor/object information. Be sure no pass `--no-edeps`
 or `--edeps` depending on if your corpus has enhanced dependencies:
 
