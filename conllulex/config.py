@@ -41,7 +41,7 @@ LANG_CFG = {
             ("PART", "POSS"),
         },
         "mismatched_lexcat_exception_checks": [
-            lambda xpos, upos, lemma, lexlemma, lexcat: (xpos == "TO" and lexcat.startswith("INF"),),
+            lambda xpos, upos, lemma, lexlemma, lexcat: (xpos == "TO" and lexcat.startswith("INF")),
             lambda xpos, upos, lemma, lexlemma, lexcat: (
                 ((xpos == "TO") != lexcat.startswith("INF")) and (upos == "SCONJ" and lexlemma == "for"),
             ),
