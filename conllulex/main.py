@@ -87,7 +87,7 @@ def enrich(input_path, output_path, corpus, subtasks):
 @click.option(
     "--override-mwe-render/--no-override-mwe-render",
     default=False,
-    help="When not set to true, compare the given `# mwe = ...` metadata to an automatically"
+    help="When not set to true, compare the given `# mwe = ...` metadata to an automatically "
     "generated version and report an error if there is a mismatch. Otherwise, silently override.",
 )
 def conllulex2json(
