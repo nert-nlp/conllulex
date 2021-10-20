@@ -198,14 +198,14 @@ def add_lexcat(sentences):
         for t in sentence:
             smwe_tok_ids = "_" if ":" not in t["smwe"] else smwes[t["smwe"].split(":")[0]]
             t["lexcat"] = compute_lexcat(t["id"], t["smwe"], smwe_tok_ids, t["ss"], t["lexlemma"], poses, deps)
-            # Check if we had a shorthand anno
-            if t["ss"][0] == "`":
+            # Check if we had a shorthand anno--tolerate an incorrect "p." prefix
+            if t["ss"][0] == "`" or t['ss'][0:3] == "p.`":
                 # If it was for `i, force SCONJ+CC pos tags
-                if t["ss"] == "`i" and t["form"] == "for":
+                if (t["ss"] == "`i" or t["ss"] == "p.`i") and t["form"] == "for":
                     t["upos"] = "SCONJ"
                     t["xpos"] = "CC"
 
-                if not (t["ss"] == "`$" and t["ss2"] == "`$"):
+                if not (t["ss"] in ["`$", "p.`$"] and t["ss2"] in ["`$", "p.`$"]):
                     # wipe away the supersense columns
                     t["ss"] = "_"
                     t["ss2"] = "_"
