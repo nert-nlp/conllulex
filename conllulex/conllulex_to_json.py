@@ -364,6 +364,22 @@ def _write_errors(errors):
     print(f"Finished with {len(errors)} errors. No output has been written.")
 
 
+def _mwe_lexlemma_valid(lang_config, sentence, smwe):
+    possible_lexlemmas = {" ".join(sentence["toks"][i - 1]["lemma"] for i in smwe["toknums"])}
+    for lemma, mismatched_lexlemmas in lang_config["mwe_lexlemma_mismatch_whitelist"].items():
+        for mismatched_lexlemma in mismatched_lexlemmas:
+            possible_lexlemmas.add(
+                " ".join(
+                    mismatched_lexlemma
+                    if sentence["toks"][i - 1]["lemma"] == lemma
+                    else sentence["toks"][i - 1]["lemma"]
+                    for i in smwe["toknums"]
+                )
+            )
+
+    return smwe["lexlemma"] in possible_lexlemmas
+
+
 def _validate_sentences(corpus, sentences, errors, validate_upos_lextag, validate_type, override_mwe_render):
     lexcat_tbd_count = 0
 
@@ -384,11 +400,11 @@ def _validate_sentences(corpus, sentences, errors, validate_upos_lextag, validat
             assert_(xmwes[int(k) - 1][2] == k, f"MWEs are not numbered in the correct order")
 
         # check that lexical & weak MWE lemmas are correct
-        lex_exprs_to_validate = chain(sentence["swes"].values(), sentence["smwes"].values()) if validate_type else []
+        lex_exprs_to_validate = chain(sentence["swes"].values(), sentence["wmwes"].values()) if validate_type else []
         for lex_expr in lex_exprs_to_validate:
             assert_(
                 lex_expr["lexlemma"] == " ".join(sentence["toks"][i - 1]["lemma"] for i in lex_expr["toknums"]),
-                f"MWE lemma is incorrect: {lex_expr} vs. {sentence['toks'][lex_expr['toknums'][0]-1]}",
+                f"MWE lemma is incorrect: {lex_expr} vs. {sentence['toks'][lex_expr['toknums'][0] - 1]}",
                 token=lex_expr,
             )
             lexcat = lex_expr["lexcat"]
@@ -480,14 +496,14 @@ def _validate_sentences(corpus, sentences, errors, validate_upos_lextag, validat
         for smwe in sentence["smwes"].values():
             assert_(len(smwe["toknums"]) > 1, "SMWEs must have more than one token", token=smwe)
             assert_(
-                smwe["lexlemma"] == " ".join(sentence["toks"][i - 1]["lemma"] for i in smwe["toknums"]),
+                _mwe_lexlemma_valid(lang_config, sentence, smwe),
                 "lexlemma appears incorrect for smwe",
                 token=smwe,
             )
         for wmwe in sentence["wmwes"].values():
             assert_(len(wmwe["toknums"]) > 1, "WMWEs must have more than one token", token=wmwe)
             assert_(
-                wmwe["lexlemma"] == " ".join(sentence["toks"][i - 1]["lemma"] for i in wmwe["toknums"]),
+                _mwe_lexlemma_valid(lang_config, sentence, wmwe),
                 "lexlemma appears incorrect for wmwe",
                 token=wmwe,
             )

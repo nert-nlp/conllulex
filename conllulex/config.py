@@ -63,6 +63,7 @@ LANG_CFG = {
             lambda xpos, upos, lemma, lexlemma, lexcat: (upos == "ADP" and lexcat == "CCONJ" and lemma == "versus"),
         ],
         "extra_prepositional_supersenses": set(),
+        "mwe_lexlemma_mismatch_whitelist": {},
     },
     # Hindi
     "hi": {
@@ -108,6 +109,10 @@ LANG_CFG = {
         ],
         # TODO is this really needed
         "extra_prepositional_supersenses": {"p.Focus", "p.NONSNACS"},
+        # It is assumed that lexlemma and lemma must match. Add exceptions here, where
+        # the first item is the lemma and the second item is a list of forms which are
+        # acceptable lexlemmas for that lemma.
+        "mwe_lexlemma_mismatch_whitelist": {"का": ["के", "की"]},
     },
 }
 
