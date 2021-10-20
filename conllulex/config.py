@@ -108,7 +108,7 @@ LANG_CFG = {
             lambda xpos, upos, lemma, lexlemma, lexcat: (lexcat == "ADV" and upos == "PART"),  # ही
         ],
         # TODO is this really needed
-        "extra_prepositional_supersenses": {"p.Focus", "p.NONSNACS"},
+        "extra_prepositional_supersenses": {"p.Focus"},
         # It is assumed that lexlemma and lemma must match. Add exceptions here, where
         # the first item is the lemma and the second item is a list of forms which are
         # acceptable lexlemmas for that lemma.
