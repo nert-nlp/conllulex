@@ -112,7 +112,18 @@ LANG_CFG = {
         # It is assumed that lexlemma and lemma must match. Add exceptions here, where
         # the first item is the lemma and the second item is a list of forms which are
         # acceptable lexlemmas for that lemma.
-        "mwe_lexlemma_mismatch_whitelist": {"का": ["के", "की"]},
+        "mwe_lexlemma_mismatch_whitelist": {
+            "का": ["के", "की"],
+            "मैं": ["के", "की"],
+            "हम": ["के", "की"],
+            "तू": ["के", "की"],
+            "तुम": ["के", "की"],
+            "आप": ["के", "की"],
+            "वह": ["के", "की"],
+            "यह": ["के", "की"],
+            "वे": ["के", "की"],
+            "ये": ["के", "की"],
+        },
     },
 }
 
