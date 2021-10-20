@@ -107,7 +107,7 @@ LANG_CFG = {
             lambda xpos, upos, lemma, lexlemma, lexcat: (lexcat == "ADV" and upos == "PART"),  # ही
         ],
         # TODO is this really needed
-        "extra_prepositional_supersenses": {"p.Focus", "p.`d", "p.NONSNACS"},
+        "extra_prepositional_supersenses": {"p.Focus", "p.NONSNACS"},
     },
 }
 
