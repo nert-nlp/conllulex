@@ -199,7 +199,7 @@ def add_lexcat(sentences):
             smwe_tok_ids = "_" if ":" not in t["smwe"] else smwes[t["smwe"].split(":")[0]]
             t["lexcat"] = compute_lexcat(t["id"], t["smwe"], smwe_tok_ids, t["ss"], t["lexlemma"], poses, deps)
             # Check if we had a shorthand anno--tolerate an incorrect "p." prefix
-            if t["ss"][0] == "`" or t['ss'][0:3] == "p.`":
+            if t["ss"][0] == "`" or t["ss"][0:3] == "p.`":
                 # If it was for `i, force SCONJ+CC pos tags
                 if (t["ss"] == "`i" or t["ss"] == "p.`i") and t["form"] == "for":
                     t["upos"] = "SCONJ"
