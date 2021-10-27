@@ -480,7 +480,15 @@ def _validate_sentences(corpus, sentences, errors, validate_upos_lextag, validat
             ):
                 mismatchOK = False
                 for f in lang_config["mismatched_lexcat_exception_checks"]:
-                    mismatchOK = mismatchOK or f(xpos, upos, tok["lemma"], swe["lexlemma"], lexcat)
+                    mismatchOK = mismatchOK or f(
+                        {
+                            "xpos": xpos,
+                            "upos": upos,
+                            "lemma": tok["lemma"],
+                            "lexlemma": swe["lexlemma"],
+                            "lexcat": lexcat,
+                        }
+                    )
 
                 assert_(
                     mismatchOK,

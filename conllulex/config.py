@@ -41,26 +41,25 @@ LANG_CFG = {
             ("PART", "POSS"),
         },
         "mismatched_lexcat_exception_checks": [
-            lambda xpos, upos, lemma, lexlemma, lexcat: (xpos == "TO" and lexcat.startswith("INF")),
-            lambda xpos, upos, lemma, lexlemma, lexcat: (
-                ((xpos == "TO") != lexcat.startswith("INF")) and (upos == "SCONJ" and lexlemma == "for"),
+            lambda d: d["xpos"] == "TO" and d["lexcat"].startswith("INF"),
+            lambda d: (
+                ((d["xpos"] == "TO") != d["lexcat"].startswith("INF"))
+                and (d["upos"] == "SCONJ" and d["lexlemma"] == "for")
             ),
-            lambda xpos, upos, lemma, lexlemma, lexcat: (
-                (upos in ("NOUN", "PROPN") != (lexcat == "N")) and (upos in ("SYM", "X") or lexcat in ("PRON", "DISC"))
+            lambda d: (
+                (d["upos"] in ("NOUN", "PROPN") != (d["lexcat"] == "N"))
+                and (d["upos"] in ("SYM", "X") or d["lexcat"] in ("PRON", "DISC"))
             ),
-            lambda xpos, upos, lemma, lexlemma, lexcat: (
-                ((upos == "AUX") != (lexcat == "AUX")) and (lemma == "be" and lexcat == "V")
+            lambda d: (
+                ((d["upos"] == "AUX") != (d["lexcat"] == "AUX")) and (d["lemma"] == "be" and d["lexcat"] == "V")
             ),
-            lambda xpos, upos, lemma, lexlemma, lexcat: (
-                ((upos == "VERB") != (lexcat == "V") and (lexcat == "ADJ" or (lemma == "be" and lexcat == "V")))
+            lambda d: (
+                (d["upos"] == "VERB") != (d["lexcat"] == "V")
+                and (d["lexcat"] == "ADJ" or (d["lemma"] == "be" and d["lexcat"] == "V"))
             ),
-            lambda xpos, upos, lemma, lexlemma, lexcat: (
-                upos == "PRON"  # and lexcat == "PRON" or lexcat == "PRON.POSS"
-            ),
-            lambda xpos, upos, lemma, lexlemma, lexcat: (
-                lexcat == "ADV" and (upos == "ADV" or upos == "PART")  # PART is for negations
-            ),
-            lambda xpos, upos, lemma, lexlemma, lexcat: (upos == "ADP" and lexcat == "CCONJ" and lemma == "versus"),
+            lambda d: (d["upos"] == "PRON"),  # and lexcat == "PRON" or lexcat == "PRON.POSS"
+            lambda d: (d["lexcat"] == "ADV" and (d["upos"] == "ADV" or d["upos"] == "PART")),  # PART is for negations
+            lambda d: (d["upos"] == "ADP" and d["lexcat"] == "CCONJ" and d["lemma"] == "versus"),
         ],
         "extra_prepositional_supersenses": set(),
         "mwe_lexlemma_mismatch_whitelist": {},
@@ -104,8 +103,8 @@ LANG_CFG = {
             ("PART", "P"),  # से
         },
         "mismatched_lexcat_exception_checks": [
-            lambda xpos, upos, lemma, lexlemma, lexcat: (lexcat == "P" and upos == "PRON"),  # possessive pronouns
-            lambda xpos, upos, lemma, lexlemma, lexcat: (lexcat == "ADV" and upos == "PART"),  # ही
+            lambda d: (d["lexcat"] == "P" and d["upos"] == "PRON"),  # possessive pronouns
+            lambda d: (d["lexcat"] == "ADV" and d["upos"] == "PART"),  # ही
         ],
         # TODO is this really needed
         "extra_prepositional_supersenses": {"p.Focus"},
