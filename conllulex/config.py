@@ -125,6 +125,45 @@ LANG_CFG = {
             "ये": ["के", "की", "में", "से", "को"],
         },
     },
+    "zh": {
+        "permitted_ancestor_combos": {
+            ("p.Circumstance", "p.Locus"),
+            ("p.Circumstance", "p.Path"),
+            ("p.Locus", "p.Goal"),
+            ("p.Locus", "p.Source"),
+            ("p.Characteristic", "p.Stuff"),
+            ("p.Whole", "p.Gestalt"),
+            ("p.Org", "p.Gestalt"),
+            ("p.QuantityItem", "p.Gestalt"),
+            ("p.Goal", "p.Locus"),
+        },
+        "banned_functions": {
+            "p.Experiencer",
+            "p.Stimulus",
+            "p.Originator",
+            "p.SocialRel",
+            "p.Org",
+            "p.OrgMember",
+            "p.Ensemble",
+            "p.QuantityValue",
+        },
+        "allowed_mismatched_upos_lexcat_pairs": {
+            # from English
+            ("NOUN", "N"),
+            ("PROPN", "N"),
+            ("VERB", "V"),
+            ("ADP", "P"),
+            ("ADV", "P"),
+            ("SCONJ", "P"),
+            ("ADP", "DISC"),
+            ("ADV", "DISC"),
+            ("SCONJ", "DISC"),
+            ("PART", "POSS"),
+        },
+        "mismatched_lexcat_exception_checks": [],
+        "extra_prepositional_supersenses": set(),
+        "mwe_lexlemma_mismatch_whitelist": {},
+    },
 }
 
 CORPUS_CFG = {
@@ -157,6 +196,20 @@ CORPUS_CFG = {
         ],
         "supersense_annotated": ["P"],
     },
+    "prince_zh": {
+        "language": "zh",
+        "enrichment_subtasks": [
+            "capitalize_supersenses",
+            "assign_sent_id",
+            "add_mwe_metadatum",
+            "add_lexlemma",
+            "add_wlemma",
+            "add_lexcat",
+            "add_lextag",
+            "renumber_mwes"
+        ],
+        "supersense_annotated": ["P"],
+    }
 }
 
 

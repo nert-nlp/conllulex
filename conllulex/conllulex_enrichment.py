@@ -8,6 +8,7 @@ import conllu
 
 from conllulex.reading import get_conllulex_tokenlists
 from conllulex.mwe_render import render
+from conllulex.supersenses import PSS
 from conllulex.tagging import sent_tags
 
 
@@ -255,6 +256,14 @@ def dedupe_question_marks(sentences):
                 t["ss2"] = "_"
 
 
+def assign_sent_id(sentences):
+    import uuid
+    for sentence in sentences:
+        meta = sentence.metadata
+        if 'sent_id' not in meta:
+            meta['sent_id'] = str(uuid.uuid4())
+
+
 def make_compound_prts_smwes(sentences):
     """
     If a token has the deprel compound:prt and it's not in a SMWE, make a SMWE out of it and its head
@@ -301,6 +310,17 @@ def renumber_mwes(sentences):
                 tok["smwe" if strength == "strong" else "wmwe"] = f"{new_id}:{mwe_token_count}"
 
 
+def capitalize_supersenses(sentences):
+    valid_ss = {ss.lower(): ss for ss in PSS}
+    for sentence in sentences:
+        for token in sentence:
+            for key in ['ss', 'ss2']:
+                if token[key].startswith('p.'):
+                    for ss, ss_cap in valid_ss.items():
+                        if token[key] == ss:
+                            token[key] = ss_cap
+
+
 SUBTASKS = {
     "dedupe_question_marks": dedupe_question_marks,
     "make_compound_prts_smwes": make_compound_prts_smwes,
@@ -311,6 +331,8 @@ SUBTASKS = {
     "add_lexcat": add_lexcat,
     "add_lextag": add_lextag,
     "renumber_mwes": renumber_mwes,
+    "assign_sent_id": assign_sent_id,
+    "capitalize_supersenses": capitalize_supersenses
 }
 
 
