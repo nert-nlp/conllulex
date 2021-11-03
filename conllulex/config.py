@@ -126,11 +126,13 @@ LANG_CFG = {
             "ये": ["के", "की", "में", "से", "को"],
             "अपना": ["के", "की", "में", "से", "को"],
             "जो": ["के", "की", "में", "से", "को"],
+            "सबसे": ["से"]
         },
         # Like above, but for lambdas applied to individual lemmas. All lambdas will be applied to both
         # the lexlemma computed from each token's lemma and the given lexlemma.
         "mwe_lexlemma_mismatch_xforms": [
             lambda lemma: lemma.replace('़', ''),
+            lambda lemma: lemma.replace('ँ', 'ं'),
             lambda lemma: lemma.replace('ख्य', 'खय')
         ]
     },
