@@ -366,7 +366,6 @@ def _write_errors(errors):
 
 
 def _mwe_lexlemma_valid(lang_config, sentence, smwe):
-    possible_lexlemmas = {" ".join(sentence["toks"][i - 1]["lemma"] for i in smwe["toknums"])}
     xforms = lang_config["mwe_lexlemma_mismatch_xforms"]
 
     def apply_xforms(xforms, value):
@@ -374,19 +373,23 @@ def _mwe_lexlemma_valid(lang_config, sentence, smwe):
             value = xform(value)
         return value
 
+    possible_lexlemmas = {" ".join(apply_xforms(xforms, sentence["toks"][i - 1]["lemma"]) for i in smwe["toknums"])}
+
     for lemma, mismatched_lexlemmas in lang_config["mwe_lexlemma_mismatch_whitelist"].items():
         for mismatched_lexlemma in mismatched_lexlemmas:
             possible_lexlemmas.add(
                 " ".join(
-                    apply_xforms(xforms, mismatched_lexlemma)
-                    if sentence["toks"][i - 1]["lemma"] == lemma
-                    else sentence["toks"][i - 1]["lemma"]
+                    apply_xforms(
+                        xforms,
+                        mismatched_lexlemma
+                        if sentence["toks"][i - 1]["lemma"] == lemma
+                        else sentence["toks"][i - 1]["lemma"])
                     for i in smwe["toknums"]
                 )
             )
 
     xformed_lexlemma = " ".join(apply_xforms(xforms, x) for x in smwe["lexlemma"].split(" "))
-    return xformed_lexlemma in possible_lexlemmas
+    return xformed_lexlemma in possible_lexlemmas, possible_lexlemmas, xformed_lexlemma
 
 
 def _validate_sentences(corpus, sentences, errors, validate_upos_lextag, validate_type, override_mwe_render):
@@ -512,17 +515,19 @@ def _validate_sentences(corpus, sentences, errors, validate_upos_lextag, validat
                 )
         for smwe in sentence["smwes"].values():
             assert_(len(smwe["toknums"]) > 1, "SMWEs must have more than one token", token=smwe)
+            correct, possible_lexlemmas, xformed_lexlemma = _mwe_lexlemma_valid(lang_config, sentence, smwe)
             assert_(
-                _mwe_lexlemma_valid(lang_config, sentence, smwe),
+                correct,
                 "lexlemma appears incorrect for smwe",
-                token=smwe,
+                token={**smwe, "possible_lexlemmas": possible_lexlemmas, "transformed_lexlemma": xformed_lexlemma},
             )
         for wmwe in sentence["wmwes"].values():
             assert_(len(wmwe["toknums"]) > 1, "WMWEs must have more than one token", token=wmwe)
+            correct, possible_lexlemmas, xformed_lexlemma = _mwe_lexlemma_valid(lang_config, sentence, wmwe)
             assert_(
-                _mwe_lexlemma_valid(lang_config, sentence, wmwe),
-                "lexlemma appears incorrect for wmwe",
-                token=wmwe,
+                correct,
+                "lexlemma appears incorrect for smwe",
+                token={**wmwe, "possible_lexlemmas": possible_lexlemmas, "transformed_lexlemma": xformed_lexlemma},
             )
         # we already checked that noninitial tokens in an MWE have _ as their lemma
 
