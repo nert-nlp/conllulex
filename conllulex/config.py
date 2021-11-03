@@ -125,6 +125,7 @@ LANG_CFG = {
             "वे": ["के", "की", "में", "से", "को"],
             "ये": ["के", "की", "में", "से", "को"],
             "अपना": ["के", "की", "में", "से", "को"],
+            "जो": ["के", "की", "में", "से", "को"],
         },
         # Like above, but for lambdas applied to individual lemmas. All lambdas will be applied to both
         # the lexlemma computed from each token's lemma and the given lexlemma.
