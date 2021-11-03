@@ -197,12 +197,16 @@ def add_lexcat(sentences):
         poses = [(t["upos"], t["xpos"]) for t in sentence]
         deps = [(t["head"], t["deprel"]) for t in sentence]
         for t in sentence:
+            # hindi idiosyncrasy--should be `d not p.`d
+            t['ss'] = t['ss'][2:] if len(t['ss']) > 2 and t['ss'][:3] == "p.`" else t['ss']
+            t['ss2'] = t['ss2'][2:] if len(t['ss2']) > 2 and t['ss2'][:3] == "p.`" else t['ss2']
+
             smwe_tok_ids = "_" if ":" not in t["smwe"] else smwes[t["smwe"].split(":")[0]]
             t["lexcat"] = compute_lexcat(t["id"], t["smwe"], smwe_tok_ids, t["ss"], t["lexlemma"], poses, deps)
             # Check if we had a shorthand anno--tolerate an incorrect "p." prefix
-            if t["ss"][0] == "`" or t["ss"][0:3] == "p.`":
+            if t["ss"][0] == "`":
                 # If it was for `i, force SCONJ+CC pos tags
-                if (t["ss"] == "`i" or t["ss"] == "p.`i") and t["form"] == "for":
+                if t["ss"] == "`i" and t["form"] == "for":
                     t["upos"] = "SCONJ"
                     t["xpos"] = "CC"
 
