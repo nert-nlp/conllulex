@@ -76,6 +76,7 @@ LANG_CFG = {
             ("p.Org", "p.Gestalt"),
             ("p.QuantityItem", "p.Gestalt"),
             ("p.Goal", "p.Locus"),
+            ("p.Topic", "p.Theme"),
         },
         "banned_functions": {
             "p.Experiencer",
@@ -85,7 +86,7 @@ LANG_CFG = {
             "p.Org",
             "p.OrgMember",
             "p.Ensemble",
-            "p.QuantityValue",
+            # "p.QuantityValue",
         },
         "allowed_mismatched_upos_lexcat_pairs": {
             # from English
@@ -107,7 +108,7 @@ LANG_CFG = {
             lambda d: (d["lexcat"] == "ADV" and d["upos"] == "PART"),  # ही
         ],
         # TODO is this really needed
-        "extra_prepositional_supersenses": {"p.Focus"},
+        "extra_prepositional_supersenses": {"p.Focus", "p.NONSNACS"},
         # It is assumed that lexlemma and lemma must match. Add exceptions here, where
         # the first item is the lemma and the second item is a list of forms which are
         # acceptable lexlemmas for that lemma.
