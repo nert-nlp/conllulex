@@ -367,18 +367,26 @@ def _write_errors(errors):
 
 def _mwe_lexlemma_valid(lang_config, sentence, smwe):
     possible_lexlemmas = {" ".join(sentence["toks"][i - 1]["lemma"] for i in smwe["toknums"])}
+    xforms = lang_config["mwe_lexlemma_mismatch_xforms"]
+
+    def apply_xforms(xforms, value):
+        for xform in xforms:
+            value = xform(value)
+        return value
+
     for lemma, mismatched_lexlemmas in lang_config["mwe_lexlemma_mismatch_whitelist"].items():
         for mismatched_lexlemma in mismatched_lexlemmas:
             possible_lexlemmas.add(
                 " ".join(
-                    mismatched_lexlemma
+                    apply_xforms(xforms, mismatched_lexlemma)
                     if sentence["toks"][i - 1]["lemma"] == lemma
                     else sentence["toks"][i - 1]["lemma"]
                     for i in smwe["toknums"]
                 )
             )
 
-    return smwe["lexlemma"] in possible_lexlemmas
+    xformed_lexlemma = " ".join(apply_xforms(xforms, x) for x in smwe["lexlemma"].split(" "))
+    return xformed_lexlemma in possible_lexlemmas
 
 
 def _validate_sentences(corpus, sentences, errors, validate_upos_lextag, validate_type, override_mwe_render):

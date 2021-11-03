@@ -63,6 +63,7 @@ LANG_CFG = {
         ],
         "extra_prepositional_supersenses": set(),
         "mwe_lexlemma_mismatch_whitelist": {},
+        "mwe_lexlemma_mismatch_xforms": []
     },
     # Hindi
     "hi": {
@@ -125,6 +126,12 @@ LANG_CFG = {
             "ये": ["के", "की", "में", "से", "को"],
             "अपना": ["के", "की", "में", "से", "को"],
         },
+        # Like above, but for lambdas applied to individual lemmas. All lambdas will be applied to both
+        # the lexlemma computed from each token's lemma and the given lexlemma.
+        "mwe_lexlemma_mismatch_xforms": [
+            lambda lemma: lemma.replace('़', ''),
+            lambda lemma: lemma.replace('ख्य', 'खय')
+        ]
     },
     "zh": {
         "permitted_ancestor_combos": {
@@ -164,6 +171,7 @@ LANG_CFG = {
         "mismatched_lexcat_exception_checks": [],
         "extra_prepositional_supersenses": set(),
         "mwe_lexlemma_mismatch_whitelist": {},
+        "mwe_lexlemma_mismatch_xforms": []
     },
 }
 
