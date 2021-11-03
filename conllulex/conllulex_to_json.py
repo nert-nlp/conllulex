@@ -357,6 +357,7 @@ def _write_errors(errors):
     print("=" * 80)
     print("= Errors")
     print("=" * 80)
+    errors = sorted(errors, key=lambda e: (e['explanation'], e['sentence_id']))
     for i, error in enumerate(errors, start=1):
         print(f"- Error {i}.")
         print(format_error(error))
