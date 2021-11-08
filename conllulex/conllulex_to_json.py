@@ -410,7 +410,7 @@ def _validate_sentences(corpus, sentences, errors, validate_upos_lextag, validat
             assert_(xmwes[int(k) - 1][2] == k, f"MWEs are not numbered in the correct order")
 
         # check that lexical & weak MWE lemmas are correct
-        lex_exprs_to_validate = chain(sentence["swes"].values(), sentence["wmwes"].values()) if validate_type else []
+        lex_exprs_to_validate = chain(sentence["swes"].values(), sentence["smwes"].values()) if validate_type else []
         for lex_expr in lex_exprs_to_validate:
             assert_(
                 lex_expr["lexlemma"] == " ".join(sentence["toks"][i - 1]["lemma"] for i in lex_expr["toknums"]),
