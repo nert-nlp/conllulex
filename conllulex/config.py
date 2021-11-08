@@ -150,13 +150,11 @@ LANG_CFG = {
             ("p.Circumstance", "p.Time"),
         },
         "banned_functions": {
-            "p.Experiencer",
             "p.Stimulus",
             "p.Originator",
             "p.SocialRel",
             "p.Org",
             "p.OrgMember",
-            "p.Ensemble",
             "p.QuantityValue",
         },
         "allowed_mismatched_upos_lexcat_pairs": {
