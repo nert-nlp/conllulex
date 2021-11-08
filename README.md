@@ -26,9 +26,6 @@ You will now have the following commands on your path:
 ```
 conllulex-enrich
 conllulex2json
-conllulex2json-streusle  # shorthand for conllulex2json --corpus streusle
-conllulex2json-pastrie   # ^
-conllulex2json-hindi     # ^
 conllulex-govobj
 ```
 
