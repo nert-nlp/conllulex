@@ -12,6 +12,13 @@ cd conllulex
 pip install -e .
 ```
 
+Alternatively, if you do not expect that you will need to make changes to the code in `conllulex`,
+simply install via pip:
+
+```
+pip install git+https://github.com/nert-nlp/conllulex.git
+```
+
 # Usage
 
 You will now have the following commands on your path:
