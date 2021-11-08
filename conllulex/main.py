@@ -122,27 +122,6 @@ def conllulex2json(
     )
 
 
-def conllulex2json_hindi():
-    sys.argv.insert(1, "conllulex2json")
-    sys.argv.insert(2, "--corpus")
-    sys.argv.insert(3, "hindi")
-    top()
-
-
-def conllulex2json_streusle():
-    sys.argv.insert(1, "conllulex2json")
-    sys.argv.insert(2, "--corpus")
-    sys.argv.insert(3, "streusle")
-    top()
-
-
-def conllulex2json_pastrie():
-    sys.argv.insert(1, "conllulex2json")
-    sys.argv.insert(2, "--corpus")
-    sys.argv.insert(3, "pastrie")
-    top()
-
-
 @click.command(help="Extend JSON file with govobj information.")
 @click.argument("input_path")
 @click.argument("output_path")
