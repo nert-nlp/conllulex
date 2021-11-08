@@ -47,7 +47,7 @@ LANG_CFG = {
                 and (d["upos"] == "SCONJ" and d["lexlemma"] == "for")
             ),
             lambda d: (
-                (d["upos"] in ("NOUN", "PROPN") != (d["lexcat"] == "N"))
+                ((d["upos"] in ("NOUN", "PROPN")) != (d["lexcat"] == "N"))
                 and (d["upos"] in ("SYM", "X") or d["lexcat"] in ("PRON", "DISC"))
             ),
             lambda d: (
