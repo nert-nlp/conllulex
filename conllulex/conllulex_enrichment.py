@@ -198,8 +198,8 @@ def add_lexcat(sentences):
         deps = [(t["head"], t["deprel"]) for t in sentence]
         for t in sentence:
             # hindi idiosyncrasy--should be `d not p.`d
-            t['ss'] = t['ss'][2:] if len(t['ss']) > 2 and t['ss'][:3] == "p.`" else t['ss']
-            t['ss2'] = t['ss2'][2:] if len(t['ss2']) > 2 and t['ss2'][:3] == "p.`" else t['ss2']
+            t["ss"] = t["ss"][2:] if len(t["ss"]) > 2 and t["ss"][:3] == "p.`" else t["ss"]
+            t["ss2"] = t["ss2"][2:] if len(t["ss2"]) > 2 and t["ss2"][:3] == "p.`" else t["ss2"]
 
             smwe_tok_ids = "_" if ":" not in t["smwe"] else smwes[t["smwe"].split(":")[0]]
             t["lexcat"] = compute_lexcat(t["id"], t["smwe"], smwe_tok_ids, t["ss"], t["lexlemma"], poses, deps)
@@ -262,10 +262,11 @@ def dedupe_question_marks(sentences):
 
 def assign_sent_id(sentences):
     import uuid
+
     for sentence in sentences:
         meta = sentence.metadata
-        if 'sent_id' not in meta:
-            meta['sent_id'] = str(uuid.uuid4())
+        if "sent_id" not in meta:
+            meta["sent_id"] = str(uuid.uuid4())
 
 
 def make_compound_prts_smwes(sentences):
@@ -318,8 +319,8 @@ def capitalize_supersenses(sentences):
     valid_ss = {ss.lower(): ss for ss in PSS}
     for sentence in sentences:
         for token in sentence:
-            for key in ['ss', 'ss2']:
-                if token[key].startswith('p.'):
+            for key in ["ss", "ss2"]:
+                if token[key].startswith("p."):
                     for ss, ss_cap in valid_ss.items():
                         if token[key] == ss:
                             token[key] = ss_cap
@@ -336,7 +337,7 @@ SUBTASKS = {
     "add_lextag": add_lextag,
     "renumber_mwes": renumber_mwes,
     "assign_sent_id": assign_sent_id,
-    "capitalize_supersenses": capitalize_supersenses
+    "capitalize_supersenses": capitalize_supersenses,
 }
 
 

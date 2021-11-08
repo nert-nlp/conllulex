@@ -354,15 +354,12 @@ def format_error(error):
 def _write_errors(errors):
     print("Errors were found during validation:")
 
-    print("=" * 80)
-    print("= Errors")
-    print("=" * 80)
-    errors = sorted(errors, key=lambda e: (e['explanation'], e['sentence_id']))
+    errors = sorted(errors, key=lambda e: (e["explanation"], e["sentence_id"]))
     for i, error in enumerate(errors, start=1):
         print(f"- Error {i}.")
         print(format_error(error))
 
-    print(f"Finished with {len(errors)} errors. No output has been written.")
+    print(f"Found a total of {len(errors)} errors.")
 
 
 def _mwe_lexlemma_valid(lang_config, sentence, smwe):
@@ -383,7 +380,8 @@ def _mwe_lexlemma_valid(lang_config, sentence, smwe):
                         xforms,
                         mismatched_lexlemma
                         if sentence["toks"][i - 1]["lemma"] == lemma
-                        else sentence["toks"][i - 1]["lemma"])
+                        else sentence["toks"][i - 1]["lemma"],
+                    )
                     for i in smwe["toknums"]
                 )
             )
@@ -586,6 +584,7 @@ def convert_conllulex_to_json(
     store_conllulex_string="none",
     override_mwe_render=False,
     ss_mapper=lambda x: x,
+    ignore_validation_errors=False,
 ):
     """
     Read an input conllulex file, convert it into the JSON format, and write the result
@@ -607,6 +606,7 @@ def convert_conllulex_to_json(
             generated version and report an error if there is a mismatch. Otherwise, silently override.
         ss_mapper: A function to apply to supersense labels to replace them in the returned data structure. Applies to
             all supersense labels (nouns, verbs, prepositions). Not applied if the supersense slot is empty.
+        ignore_validation_errors: when True, produce output regardless of errors
 
     Returns:
         Nothing
@@ -621,7 +621,14 @@ def convert_conllulex_to_json(
 
     _validate_sentences(corpus, sentences, errors, validate_upos_lextag, validate_type, override_mwe_render)
 
-    if len(errors) > 0:
-        _write_errors(errors)
-    else:
+    if len(errors) == 0:
         _write_json(sentences, output_path)
+    else:
+        if ignore_validation_errors:
+            _write_errors(errors)
+            print("`ignore_validation_errors` was set to true, writing output anyway")
+            _write_json(sentences, output_path)
+            print(f"Wrote {len(sentences)} sentences to {output_path}")
+        else:
+            _write_errors(errors)
+            print("Errors were found. No output was written.")
