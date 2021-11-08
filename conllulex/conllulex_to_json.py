@@ -584,7 +584,7 @@ def convert_conllulex_to_json(
     store_conllulex_string="none",
     override_mwe_render=False,
     ss_mapper=lambda x: x,
-    ignore_validation_errors=False,
+    force_write=False,
 ):
     """
     Read an input conllulex file, convert it into the JSON format, and write the result
@@ -606,7 +606,7 @@ def convert_conllulex_to_json(
             generated version and report an error if there is a mismatch. Otherwise, silently override.
         ss_mapper: A function to apply to supersense labels to replace them in the returned data structure. Applies to
             all supersense labels (nouns, verbs, prepositions). Not applied if the supersense slot is empty.
-        ignore_validation_errors: when True, produce output regardless of errors
+        force_write: when True, produce output regardless of errors
 
     Returns:
         Nothing
@@ -624,7 +624,7 @@ def convert_conllulex_to_json(
     if len(errors) == 0:
         _write_json(sentences, output_path)
     else:
-        if ignore_validation_errors:
+        if force_write:
             _write_errors(errors)
             print("`ignore_validation_errors` was set to true, writing output anyway")
             _write_json(sentences, output_path)

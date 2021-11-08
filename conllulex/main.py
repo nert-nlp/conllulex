@@ -91,7 +91,7 @@ def enrich(input_path, output_path, corpus, subtasks):
     "generated version and report an error if there is a mismatch. Otherwise, silently override.",
 )
 @click.option(
-    "--ignore-validation-errors/--no-ignore-validation-errors",
+    "--force-write/--no-force-write",
     default=False,
     help="By default, the conversion will halt if any errors are detected. If this option is set to true, "
     "print validation errors as warnings and produce output anyway.",
@@ -106,7 +106,7 @@ def conllulex2json(
     validate_type,
     store_conllulex_string,
     override_mwe_render,
-    ignore_validation_errors,
+    force_write,
 ):
     convert_conllulex_to_json(
         input_path=input_path,
@@ -118,7 +118,7 @@ def conllulex2json(
         validate_type=validate_type,
         store_conllulex_string=store_conllulex_string,
         override_mwe_render=override_mwe_render,
-        ignore_validation_errors=ignore_validation_errors,
+        force_write=force_write,
     )
 
 
