@@ -251,6 +251,49 @@ def _store_conllulex_columns(sentence, token_dict, token, errors, ss_mapper):
     token_dict["lextag"] = lextag
 
 
+def _validate_sentence_ids(sentences, errors):
+    """
+    Sentences are requried to have `sent_id` equal to something like `...-01` where the last bit, conforming
+    to regex /-\\d+/, indicates the number of the sentence within the document.
+    """
+    sent_ids = [s.metadata["sent_id"] for s in sentences]
+    doc_id = lambda x: x.rsplit('-', 1)[0]
+    sent_num = lambda x: int(x.rsplit('-', 1)[1])
+    try:
+        sent_numbers = [sent_num(sid) for sid in sent_ids]
+    except ValueError:
+        _append_if_error(errors, sent_ids[0], False,
+                         "All sentence ids must match the regex /.*-\\d+/ (e.g. `-001`)")
+        return
+    _append_if_error(
+        errors,
+        sent_ids[0],
+        len(set(sent_ids)) == len(sent_ids),
+        "Sentence IDs must be unique",
+        {"sent_ids": sent_ids}
+    )
+
+    sent_ids_by_doc = defaultdict(list)
+    for sent_id in sent_ids:
+        sent_ids_by_doc[doc_id(sent_id)].append(sent_id)
+    for doc_id, doc_sent_ids in sent_ids_by_doc.items():
+        doc_sent_numbers = [sent_num(sid) for sid in doc_sent_ids]
+        _append_if_error(
+            errors,
+            doc_id,
+            doc_sent_numbers[0] == 1,
+            "Sentence IDs must begin at 1",
+            {"doc_sent_ids": doc_sent_ids}
+        )
+        _append_if_error(
+            errors,
+            doc_id,
+            doc_sent_numbers == list(range(1, len(doc_sent_numbers) + 1)),
+            "Sentence IDs must be monotonically increasing",
+            {"doc_sent_ids": doc_sent_ids}
+        )
+
+
 def _load_sentences(
     input_path,
     include_morph_deps,
@@ -263,7 +306,10 @@ def _load_sentences(
     if input_path.endswith(".json"):
         return _load_json(input_path, ss_mapper, include_morph_deps, include_misc)
 
-    for token_list in get_conllulex_tokenlists(input_path):
+    token_lists = get_conllulex_tokenlists(input_path)
+    _validate_sentence_ids(token_lists, errors)
+
+    for token_list in token_lists:
         sent_id = token_list.metadata["sent_id"]
         sentence = {
             "sent_id": sent_id,
