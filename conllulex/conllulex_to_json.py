@@ -259,12 +259,6 @@ def _validate_sentence_ids(sentences, errors):
     sent_ids = [s.metadata["sent_id"] for s in sentences]
     doc_id = lambda x: x.rsplit('-', 1)[0]
     sent_num = lambda x: int(x.rsplit('-', 1)[1])
-    try:
-        sent_numbers = [sent_num(sid) for sid in sent_ids]
-    except ValueError:
-        _append_if_error(errors, sent_ids[0], False,
-                         "All sentence ids must match the regex /.*-\\d+/ (e.g. `-001`)")
-        return
     _append_if_error(
         errors,
         sent_ids[0],
@@ -277,7 +271,12 @@ def _validate_sentence_ids(sentences, errors):
     for sent_id in sent_ids:
         sent_ids_by_doc[doc_id(sent_id)].append(sent_id)
     for doc_id, doc_sent_ids in sent_ids_by_doc.items():
-        doc_sent_numbers = [sent_num(sid) for sid in doc_sent_ids]
+        try:
+            doc_sent_numbers = [sent_num(sid) for sid in doc_sent_ids]
+        except ValueError:
+            _append_if_error(errors, sent_ids[0], False,
+                             "All sentence ids must match the regex /.*-\\d+/ (e.g. `-001`)")
+            return
         _append_if_error(
             errors,
             doc_id,
