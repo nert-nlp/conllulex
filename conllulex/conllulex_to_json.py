@@ -251,14 +251,14 @@ def _store_conllulex_columns(sentence, token_dict, token, errors, ss_mapper):
     token_dict["lextag"] = lextag
 
 
-def _validate_sentence_ids(sentences, errors):
+def _validate_sentence_ids(corpus_config, sentences, errors):
     """
     Sentences are requried to have `sent_id` equal to something like `...-01` where the last bit, conforming
     to regex /-\\d+/, indicates the number of the sentence within the document.
     """
     sent_ids = [s.metadata["sent_id"] for s in sentences]
-    doc_id = lambda x: x.rsplit('-', 1)[0]
-    sent_num = lambda x: int(x.rsplit('-', 1)[1])
+    doc_id = corpus_config.get("doc_id_fn", lambda x: x.rsplit('-', 1)[0])
+    sent_num = corpus_config.get("sent_num_fn", lambda x: int(x.rsplit('-', 1)[1]))
     _append_if_error(
         errors,
         sent_ids[0],
@@ -294,19 +294,22 @@ def _validate_sentence_ids(sentences, errors):
 
 
 def _load_sentences(
+    corpus,
     input_path,
     include_morph_deps,
     include_misc,
     store_conllulex_string,
     ss_mapper,
 ):
+    _, corpus_config = get_config(corpus)
+
     errors = []
     sentences = []
     if input_path.endswith(".json"):
         return _load_json(input_path, ss_mapper, include_morph_deps, include_misc)
 
     token_lists = get_conllulex_tokenlists(input_path)
-    _validate_sentence_ids(token_lists, errors)
+    _validate_sentence_ids(corpus_config, token_lists, errors)
 
     for token_list in token_lists:
         sent_id = token_list.metadata["sent_id"]
@@ -657,6 +660,7 @@ def convert_conllulex_to_json(
         Nothing
     """
     sentences, errors = _load_sentences(
+        corpus,
         input_path,
         include_morph_deps,
         include_misc,
