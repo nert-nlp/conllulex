@@ -257,14 +257,10 @@ def _validate_sentence_ids(corpus_config, sentences, errors):
     to regex /-\\d+/, indicates the number of the sentence within the document.
     """
     sent_ids = [s.metadata["sent_id"] for s in sentences]
-    doc_id = corpus_config.get("doc_id_fn", lambda x: x.rsplit('-', 1)[0])
-    sent_num = corpus_config.get("sent_num_fn", lambda x: int(x.rsplit('-', 1)[1]))
+    doc_id = corpus_config.get("doc_id_fn", lambda x: x.rsplit("-", 1)[0])
+    sent_num = corpus_config.get("sent_num_fn", lambda x: int(x.rsplit("-", 1)[1]))
     _append_if_error(
-        errors,
-        sent_ids[0],
-        len(set(sent_ids)) == len(sent_ids),
-        "Sentence IDs must be unique",
-        {"sent_ids": sent_ids}
+        errors, sent_ids[0], len(set(sent_ids)) == len(sent_ids), "Sentence IDs must be unique", {"sent_ids": sent_ids}
     )
 
     sent_ids_by_doc = defaultdict(list)
@@ -274,22 +270,19 @@ def _validate_sentence_ids(corpus_config, sentences, errors):
         try:
             doc_sent_numbers = [sent_num(sid) for sid in doc_sent_ids]
         except ValueError:
-            _append_if_error(errors, sent_ids[0], False,
-                             "All sentence ids must match the regex /.*-\\d+/ (e.g. `-001`)")
+            _append_if_error(
+                errors, sent_ids[0], False, "All sentence ids must match the regex /.*-\\d+/ (e.g. `-001`)"
+            )
             return
         _append_if_error(
-            errors,
-            doc_id,
-            doc_sent_numbers[0] == 1,
-            "Sentence IDs must begin at 1",
-            {"doc_sent_ids": doc_sent_ids}
+            errors, doc_id, doc_sent_numbers[0] == 1, "Sentence IDs must begin at 1", {"doc_sent_ids": doc_sent_ids}
         )
         _append_if_error(
             errors,
             doc_id,
             doc_sent_numbers == list(range(1, len(doc_sent_numbers) + 1)),
             "Sentence IDs must be monotonically increasing",
-            {"doc_sent_ids": doc_sent_ids}
+            {"doc_sent_ids": doc_sent_ids},
         )
 
 

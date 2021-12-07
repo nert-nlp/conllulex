@@ -216,11 +216,11 @@ CORPUS_CFG = {
             "add_wlemma",
             "add_lexcat",
             "add_lextag",
-            "renumber_mwes"
+            "renumber_mwes",
         ],
         "supersense_annotated": ["P"],
-        "doc_id_fn": lambda x: x.rsplit('.', 1)[0],
-        "sent_num_fn": lambda x: x.rsplit('.', 1)[1]
+        "doc_id_fn": lambda x: x.rsplit(".", 1)[0],
+        "sent_num_fn": lambda x: x.rsplit(".", 1)[1],
     },
     "prince_zh": {
         "language": "zh",
