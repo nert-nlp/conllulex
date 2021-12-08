@@ -207,10 +207,10 @@ CORPUS_CFG = {
         ],
         "supersense_annotated": ["P"],
     },
-    # Made against https://github.com/nert-nlp/UCCA-SNACS/tree/ef10fc7d32ec7b81654a92003db6f6c3433b6a8e/data/the_little_prince/en/pss
     "prince_en": {
         "language": "en",
         "enrichment_subtasks": [
+            ["run_through_pipeline", "en"],
             "add_mwe_metadatum",
             "add_lexlemma",
             "add_wlemma",

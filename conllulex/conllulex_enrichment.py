@@ -2,9 +2,11 @@
 This is a collection of utilities for taking a sparse conllulex file and populating
 more of its columns and metadata fields by guessing and/or 
 """
+import sys
 from collections import defaultdict
 
 import conllu
+from tqdm import tqdm
 
 from conllulex.reading import get_conllulex_tokenlists
 from conllulex.mwe_render import render
@@ -326,6 +328,36 @@ def capitalize_supersenses(sentences):
                             token[key] = ss_cap
 
 
+def run_through_pipeline(sentences, stanza_language_code):
+    import stanza
+
+    stanza.download(stanza_language_code)
+    nlp = stanza.Pipeline(
+        lang=stanza_language_code, tokenize_pretokenized=True, processors="tokenize,pos,lemma,depparse"
+    )
+
+    print("Beginning processing...")
+    for sentence in tqdm(sentences):
+        tokens = " ".join([t["form"] for t in sentence])
+        doc = nlp(tokens)
+        assert len(doc.sentences) == 1
+        for i, o in enumerate(doc.sentences[0].words):
+            t = sentence[i]
+            t["lemma"] = o.lemma
+            t["upos"] = o.upos
+            t["xpos"] = o.xpos
+            feats = o.feats
+            if feats:
+                feats = {v.split("=")[0]: v.split("=")[1] for v in feats.split("|")}
+                if len(feats) == 0:
+                    feats = "_"
+            else:
+                feats = "_"
+            t["feats"] = feats
+            t["head"] = o.head
+            t["deprel"] = o.deprel
+
+
 SUBTASKS = {
     "dedupe_question_marks": dedupe_question_marks,
     "make_compound_prts_smwes": make_compound_prts_smwes,
@@ -338,6 +370,7 @@ SUBTASKS = {
     "renumber_mwes": renumber_mwes,
     "assign_sent_id": assign_sent_id,
     "capitalize_supersenses": capitalize_supersenses,
+    "run_through_pipeline": run_through_pipeline,
 }
 
 
@@ -345,9 +378,14 @@ def main(conllulex_input_path, conllulex_output_path, subtasks):
     sentences = get_conllulex_tokenlists(conllulex_input_path)
 
     for subtask in subtasks:
-        if subtask not in SUBTASKS:
-            raise Exception(f"Unknown enrichment subtask: {subtask}")
-        SUBTASKS[subtask](sentences)
+        has_args = not isinstance(subtask, str)
+        subtask_key = subtask[0] if has_args else subtask
+        if subtask_key not in SUBTASKS:
+            raise Exception(f"Unknown enrichment subtask: {subtask_key}")
+        if has_args:
+            SUBTASKS[subtask_key](sentences, *subtask[1:])
+        else:
+            SUBTASKS[subtask_key](sentences)
 
     with open(conllulex_output_path, "w") as f:
         f.write("".join(s.serialize() for s in sentences))
