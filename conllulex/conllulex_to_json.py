@@ -268,19 +268,20 @@ def _validate_sentence_ids(corpus_config, sentences, errors):
         sent_ids_by_doc[doc_id(sent_id)].append(sent_id)
     for doc_id, doc_sent_ids in sent_ids_by_doc.items():
         try:
-            doc_sent_numbers = [sent_num(sid) for sid in doc_sent_ids]
+            doc_sent_numbers = [int(sent_num(sid)) for sid in doc_sent_ids]
         except ValueError:
             _append_if_error(
                 errors, sent_ids[0], False, "All sentence ids must match the regex /.*-\\d+/ (e.g. `-001`)"
             )
             return
-        _append_if_error(
-            errors, doc_id, doc_sent_numbers[0] == 1, "Sentence IDs must begin at 1", {"doc_sent_ids": doc_sent_ids}
-        )
+        if corpus_config["require_sentence_numbers_from_1"]:
+            _append_if_error(
+                errors, doc_id, doc_sent_numbers[0] == 1, "Sentence IDs must begin at 1", {"doc_sent_ids": doc_sent_ids}
+            )
         _append_if_error(
             errors,
             doc_id,
-            doc_sent_numbers == list(range(1, len(doc_sent_numbers) + 1)),
+            doc_sent_numbers == list(range(doc_sent_numbers[0], doc_sent_numbers[-1] + 1)),
             "Sentence IDs must be monotonically increasing",
             {"doc_sent_ids": doc_sent_ids},
         )

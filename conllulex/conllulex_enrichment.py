@@ -204,8 +204,8 @@ def add_lexcat(sentences):
             t["ss2"] = t["ss2"][2:] if len(t["ss2"]) > 2 and t["ss2"][:3] == "p.`" else t["ss2"]
 
             # sneakily remove NONSNACS or p.NONSNACS if we encounter it
-            t["ss"] = "_" if t["ss"] in ["NONSNACS", "p.NONSNACS"] else t["ss"]
-            t["ss2"] = "_" if t["ss2"] in ["NONSNACS", "p.NONSNACS"] else t["ss2"]
+            # t["ss"] = "_" if t["ss"] in ["NONSNACS", "p.NONSNACS"] else t["ss"]
+            # t["ss2"] = "_" if t["ss2"] in ["NONSNACS", "p.NONSNACS"] else t["ss2"]
 
             smwe_tok_ids = "_" if ":" not in t["smwe"] else smwes[t["smwe"].split(":")[0]]
             t["lexcat"] = compute_lexcat(t["id"], t["smwe"], smwe_tok_ids, t["ss"], t["lexlemma"], poses, deps)

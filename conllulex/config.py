@@ -178,7 +178,12 @@ LANG_CFG = {
 }
 
 CORPUS_CFG = {
-    "streusle": {"language": "en", "enrichment_subtasks": [], "supersense_annotated": ["N", "V", "P"]},
+    "streusle": {
+        "language": "en",
+        "enrichment_subtasks": [],
+        "supersense_annotated": ["N", "V", "P"],
+        "require_sentence_numbers_from_1": True,
+    },
     "pastrie": {
         "language": "en",
         "enrichment_subtasks": [
@@ -193,6 +198,7 @@ CORPUS_CFG = {
             "renumber_mwes",
         ],
         "supersense_annotated": ["P"],
+        "require_sentence_numbers_from_1": True,
     },
     "hindi": {
         "language": "hi",
@@ -206,6 +212,7 @@ CORPUS_CFG = {
             "renumber_mwes",
         ],
         "supersense_annotated": ["P"],
+        "require_sentence_numbers_from_1": True,
     },
     "prince_en": {
         "language": "en",
@@ -221,6 +228,7 @@ CORPUS_CFG = {
         "supersense_annotated": ["P"],
         "doc_id_fn": lambda x: x.rsplit(".", 1)[0],
         "sent_num_fn": lambda x: x.rsplit(".", 1)[1],
+        "require_sentence_numbers_from_1": False,
     },
     "prince_zh": {
         "language": "zh",
@@ -235,6 +243,7 @@ CORPUS_CFG = {
             "renumber_mwes",
         ],
         "supersense_annotated": ["P"],
+        "require_sentence_numbers_from_1": True,
     },
 }
 
