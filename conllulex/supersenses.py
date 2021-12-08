@@ -181,6 +181,8 @@ def coarsen_pss(ss, depth):
 
 
 def ancestors(ss):
+    if ss is None:
+        return []
     par = PSS_PARENTS[ss]
     if par is None:
         return []

@@ -492,7 +492,7 @@ def _validate_sentences(corpus, sentences, errors, validate_upos_lextag, validat
                     assert_(False, f"Invalid ss2: {lex_expr}", token=lex_expr)
                 elif ss is not None and ss.startswith("p."):
                     assert_(
-                        ss2.startswith("p."),
+                        ss2 and ss2.startswith("p."),
                         "Found an ss2 not prefixed with p. when ss was prefixed with p.",
                         token=lex_expr,
                     )
