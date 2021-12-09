@@ -7,7 +7,7 @@ This is a port of some of the CoNLL-U-Lex utils from [STREUSLE](https://github.c
 Clone to a local repository and pip install:
 
 ```
-git clone https://github.com/lgessler/conllulex.git
+git clone https://github.com/nert-nlp/conllulex.git
 cd conllulex
 pip install -e .
 ```
