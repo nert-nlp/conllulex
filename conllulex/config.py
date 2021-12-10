@@ -108,7 +108,7 @@ LANG_CFG = {
             lambda d: (d["lexcat"] == "P" and d["upos"] == "PRON"),  # possessive pronouns
             lambda d: (d["lexcat"] == "ADV" and d["upos"] == "PART"),  # ही
         ],
-        # TODO is this really needed
+        # TODO is this really needed? These probably ought to just live in supersenses.py 
         "extra_prepositional_supersenses": {"p.Focus", "p.NONSNACS"},
         # It is assumed that lexlemma and lemma must match. Add exceptions here, where
         # the first item is the lemma and the second item is a list of forms which are
