@@ -57,7 +57,7 @@ LANG_CFG = {
                 (d["upos"] == "VERB") != (d["lexcat"] == "V")
                 and (d["lexcat"] == "ADJ" or (d["lemma"] == "be" and d["lexcat"] == "V"))
             ),
-            lambda d: (d["upos"] == "PRON"),  # and lexcat == "PRON" or lexcat == "PRON.POSS"
+            lambda d: (d["upos"] == "PRON") and d["lexcat"] == "PRON" or d["lexcat"] == "PRON.POSS",
             lambda d: (d["lexcat"] == "ADV" and (d["upos"] == "ADV" or d["upos"] == "PART")),  # PART is for negations
             lambda d: (d["upos"] == "ADP" and d["lexcat"] == "CCONJ" and d["lemma"] == "versus"),
         ],
