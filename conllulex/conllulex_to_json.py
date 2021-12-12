@@ -278,13 +278,14 @@ def _validate_sentence_ids(corpus_config, sentences, errors):
             _append_if_error(
                 errors, doc_id, doc_sent_numbers[0] == 1, "Sentence IDs must begin at 1", {"doc_sent_ids": doc_sent_ids}
             )
-        _append_if_error(
-            errors,
-            doc_id,
-            doc_sent_numbers == list(range(doc_sent_numbers[0], doc_sent_numbers[-1] + 1)),
-            "Sentence IDs must be monotonically increasing",
-            {"doc_sent_ids": doc_sent_ids},
-        )
+        if corpus_config["require_sentence_numbers_consecutive"]:
+            _append_if_error(
+                errors,
+                doc_id,
+                doc_sent_numbers == list(range(doc_sent_numbers[0], doc_sent_numbers[-1] + 1)),
+                "Sentence IDs must span a contiguous range of non-negative integers",
+                {"doc_sent_ids": doc_sent_ids},
+            )
 
 
 def _load_sentences(
