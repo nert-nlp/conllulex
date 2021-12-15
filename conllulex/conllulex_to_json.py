@@ -101,7 +101,7 @@ def _store_metadata(sentence, token_list, errors):
         '"toks", "swes", "smwes", and "wmwes" are not allowed to be metadata keys',
     )
     for k, v in metadata.items():
-        if k not in banned_keys and not any(skip in k for skip in ["newpar", "newdoc", "TODO"]):
+        if k not in banned_keys and not any(skip in k for skip in ["TODO"]):
             sentence[k] = v
 
 
