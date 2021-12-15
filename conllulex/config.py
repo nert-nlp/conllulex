@@ -57,7 +57,7 @@ LANG_CFG = {
                 (d["upos"] == "VERB") != (d["lexcat"] == "V")
                 and (d["lexcat"] == "ADJ" or (d["lemma"] == "be" and d["lexcat"] == "V"))
             ),
-            lambda d: (d["upos"] == "PRON"),  # and lexcat == "PRON" or lexcat == "PRON.POSS"
+            lambda d: (d["upos"] == "PRON") and d["lexcat"] == "PRON" or d["lexcat"] == "PRON.POSS",
             lambda d: (d["lexcat"] == "ADV" and (d["upos"] == "ADV" or d["upos"] == "PART")),  # PART is for negations
             lambda d: (d["upos"] == "ADP" and d["lexcat"] == "CCONJ" and d["lemma"] == "versus"),
         ],
@@ -108,7 +108,7 @@ LANG_CFG = {
             lambda d: (d["lexcat"] == "P" and d["upos"] == "PRON"),  # possessive pronouns
             lambda d: (d["lexcat"] == "ADV" and d["upos"] == "PART"),  # ही
         ],
-        # TODO is this really needed
+        # TODO is this really needed? These probably ought to just live in supersenses.py
         "extra_prepositional_supersenses": {"p.Focus", "p.NONSNACS"},
         # It is assumed that lexlemma and lemma must match. Add exceptions here, where
         # the first item is the lemma and the second item is a list of forms which are
@@ -178,7 +178,13 @@ LANG_CFG = {
 }
 
 CORPUS_CFG = {
-    "streusle": {"language": "en", "enrichment_subtasks": [], "supersense_annotated": ["N", "V", "P"]},
+    "streusle": {
+        "language": "en",
+        "enrichment_subtasks": [],
+        "supersense_annotated": ["N", "V", "P"],
+        "require_sentence_numbers_from_1": True,
+        "require_sentence_numbers_consecutive": True,
+    },
     "pastrie": {
         "language": "en",
         "enrichment_subtasks": [
@@ -193,11 +199,13 @@ CORPUS_CFG = {
             "renumber_mwes",
         ],
         "supersense_annotated": ["P"],
+        "require_sentence_numbers_from_1": True,
+        "require_sentence_numbers_consecutive": True,
     },
-    "hindi": {
-        "language": "hi",
+    "prince_en": {
+        "language": "en",
         "enrichment_subtasks": [
-            "dedupe_question_marks",
+            ["run_through_pipeline", "en"],
             "add_mwe_metadatum",
             "add_lexlemma",
             "add_wlemma",
@@ -206,6 +214,10 @@ CORPUS_CFG = {
             "renumber_mwes",
         ],
         "supersense_annotated": ["P"],
+        "doc_id_fn": lambda x: x.rsplit(".", 1)[0],
+        "sent_num_fn": lambda x: x.rsplit(".", 1)[1],
+        "require_sentence_numbers_from_1": False,
+        "require_sentence_numbers_consecutive": False,
     },
     "prince_zh": {
         "language": "zh",
@@ -220,6 +232,23 @@ CORPUS_CFG = {
             "renumber_mwes",
         ],
         "supersense_annotated": ["P"],
+        "require_sentence_numbers_from_1": True,
+        "require_sentence_numbers_consecutive": True,
+    },
+    "prince_hi": {
+        "language": "hi",
+        "enrichment_subtasks": [
+            "dedupe_question_marks",
+            "add_mwe_metadatum",
+            "add_lexlemma",
+            "add_wlemma",
+            "add_lexcat",
+            "add_lextag",
+            "renumber_mwes",
+        ],
+        "supersense_annotated": ["P"],
+        "require_sentence_numbers_from_1": True,
+        "require_sentence_numbers_consecutive": True,
     },
 }
 
