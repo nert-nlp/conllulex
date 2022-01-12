@@ -1,6 +1,6 @@
 # Introduction
 
-This is a port of some of the CoNLL-U-Lex utils from [STREUSLE](https://github.com/nert-nlp/streusle). 
+This is a port of some of the [CoNLL-U-Lex](https://github.com/nert-nlp/streusle/blob/master/CONLLULEX.md) utils from [STREUSLE](https://github.com/nert-nlp/streusle). 
 
 # Setup
 
