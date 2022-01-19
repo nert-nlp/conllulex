@@ -13,7 +13,7 @@ from conllulex.config import get_config
 from conllulex.mwe_render import render
 from conllulex.reading import get_conllulex_tokenlists
 from conllulex.supersenses import ancestors, makesslabel
-from conllulex.lexcatter import supersenses_for_lexcat, ALL_LEXCATS
+from conllulex.lexcatter import supersenses_for_lexcat, ALL_LEXCATS, ZH_LEXCATS
 from conllulex.tagging import sent_tags
 
 
@@ -523,7 +523,7 @@ def _validate_sentences(corpus, sentences, errors, validate_upos_lextag, validat
             lexcat = swe["lexcat"]
             if lexcat.endswith("!@"):
                 continue
-            if lexcat not in ALL_LEXCATS:
+            if lexcat not in ALL_LEXCATS and lexcat not in ZH_LEXCATS: # Chinese has different LEXCATS
                 assert_(not validate_type, f"invalid lexcat {lexcat} for single-word expression '{tok['word']}'")
                 continue
             if (

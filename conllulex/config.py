@@ -138,6 +138,7 @@ LANG_CFG = {
     },
     "zh": {
         "permitted_ancestor_combos": {
+            ("p.Circumstance", "p.Time"),
             ("p.Circumstance", "p.Locus"),
             ("p.Circumstance", "p.Path"),
             ("p.Locus", "p.Goal"),
@@ -170,7 +171,13 @@ LANG_CFG = {
             ("SCONJ", "DISC"),
             ("PART", "POSS"),
         },
-        "mismatched_lexcat_exception_checks": [],
+        "mismatched_lexcat_exception_checks": [
+            lambda d: d["xpos"] in  ["LC", "BA", "LB"], # Localizers, BA 把 and BEI 被
+            lambda d: (d["lexcat"] == "DISC" and d["upos"] == "P"),
+            lambda d: d["lexlemma"] in  ["面前",  "看来", "至于说", "与", "就"],
+            lambda d: (d["lexcat"] == "P" and d["upos"] == "VV"
+                       and d["lexlemma"] in ["在", "象", "给", "冲", "与", "过", "拿", "当"]),
+        ],
         "extra_prepositional_supersenses": set(),
         "mwe_lexlemma_mismatch_whitelist": {},
         "mwe_lexlemma_mismatch_xforms": [],
