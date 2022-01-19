@@ -21,7 +21,7 @@ def supersenses_for_lexcat(lc):
         return PSS | {"`$"}
 
 
-ALL_LEXCATS = {
+BASE_LEXCATS = {
     "N",
     "PRON",
     "V",
@@ -77,3 +77,9 @@ ZH_LEXCATS = {
     "VE",
     "VV",
 }
+
+
+def get_lexcat_set(language_code):
+    if language_code == "zh":
+        return BASE_LEXCATS.union(ZH_LEXCATS)
+    return BASE_LEXCATS
