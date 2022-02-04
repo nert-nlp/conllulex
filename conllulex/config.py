@@ -165,6 +165,8 @@ LANG_CFG = {
             ("VERB", "V"),
             ("ADP", "P"),
             ("ADV", "P"),
+            ("PART", "ADV"),
+            ("VERB", "P"),
             ("SCONJ", "P"),
             ("ADP", "DISC"),
             ("ADV", "DISC"),
