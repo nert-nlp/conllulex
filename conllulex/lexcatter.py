@@ -46,40 +46,31 @@ BASE_LEXCATS = {
 }
 
 ZH_LEXCATS = {
-    "AD",
-    "AS",
-    "BA",
-    "CC",
-    "CD",
-    "CS",
-    "DEC",
-    "DEG",
-    "DER",
-    "DEV",
-    "DT",
-    "ETC",
-    "IJ",
-    "JJ",
-    "LB",
-    "LC",
-    "M",
-    "MSP",
-    "NN",
-    "NR",
-    "NT",
-    "OD",
-    "PN",
-    "PU",
-    "SB",
-    "SP",
-    "VA",
-    "VC",
-    "VE",
-    "VV",
+    "BA", # 把
+    "DE", # DER, DEC, DEG, DEV
+    "LB", # long bei 被
+    "LC", # localizer
+    "MSP", # suo 所 lai 来
+    "N",
+    "PRON",
+    "V",
+    "P",
+    "AUX",
+    "ADJ",
+    "ADV",
+    "DET",
+    "PART",
+    "CCONJ",
+    "SCONJ",
+    "INTJ",
+    "NUM",
+    "SYM",
+    "PUNCT",
+    "X",
 }
 
 
 def get_lexcat_set(language_code):
     if language_code == "zh":
-        return BASE_LEXCATS.union(ZH_LEXCATS)
+        return ZH_LEXCATS
     return BASE_LEXCATS
