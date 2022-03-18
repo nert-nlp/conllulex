@@ -66,6 +66,7 @@ ZH_LEXCATS = {
     "NUM",
     "SYM",
     "PUNCT",
+    "DISC",
     "X",
 }
 
