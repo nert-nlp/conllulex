@@ -73,6 +73,9 @@ LANG_CFG = {
             ("p.Locus", "p.Goal"),
             ("p.Locus", "p.Source"),
             ("p.Characteristic", "p.Stuff"),
+            ("p.Characteristic", "p.QuantityValue"),
+            ("p.PartPortion", "p.Characteristic"),
+            ("p.Gestalt", "p.Whole"),
             ("p.Whole", "p.Gestalt"),
             ("p.Org", "p.Gestalt"),
             ("p.QuantityItem", "p.Gestalt"),
@@ -130,10 +133,13 @@ LANG_CFG = {
         },
         # Like above, but for lambdas applied to individual lemmas. All lambdas will be applied to both
         # the lexlemma computed from each token's lemma and the given lexlemma.
+
+        # undoing and commenting out.
+
         "mwe_lexlemma_mismatch_xforms": [
-            lambda lemma: lemma.replace("़", ""),
-            lambda lemma: lemma.replace("ँ", "ं"),
-            lambda lemma: lemma.replace("ख्य", "खय"),
+        #    lambda lemma: lemma.replace("़", ""),
+        #    lambda lemma: lemma.replace("ँ", "ं"),
+        #    lambda lemma: lemma.replace("ख्य", "खय"),
         ],
     },
     "zh": {

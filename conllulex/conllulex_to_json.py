@@ -456,11 +456,23 @@ def _validate_sentences(corpus, sentences, errors, validate_upos_lextag, validat
         # check that lexical & weak MWE lemmas are correct
         lex_exprs_to_validate = chain(sentence["swes"].values(), sentence["smwes"].values()) if validate_type else []
         for lex_expr in lex_exprs_to_validate:
-            assert_(
-                lex_expr["lexlemma"] == " ".join(sentence["toks"][i - 1]["lemma"] for i in lex_expr["toknums"]),
-                f"MWE lemma is incorrect: {lex_expr} vs. {sentence['toks'][lex_expr['toknums'][0] - 1]}",
-                token=lex_expr,
-            )
+
+
+            if corpus_config['language'] == 'hi' and len(lex_expr['toknums']) > 1:
+                # check against the form directly for hindi MWE expressions only
+                assert_(
+                    lex_expr["lexlemma"] == " ".join(sentence["toks"][i - 1]["word"] for i in lex_expr["toknums"]),
+                    f"MWE lemma is incorrect: {lex_expr} vs. {sentence['toks'][lex_expr['toknums'][0] - 1]}",
+                    token=lex_expr,
+                )
+
+
+            else:
+                assert_(
+                    lex_expr["lexlemma"] == " ".join(sentence["toks"][i - 1]["lemma"] for i in lex_expr["toknums"]),
+                    f"MWE lemma is incorrect: {lex_expr} vs. {sentence['toks'][lex_expr['toknums'][0] - 1]}",
+                    token=lex_expr,
+                )
             lexcat = lex_expr["lexcat"]
             if lexcat.endswith("!@"):
                 lexcat_tbd_count += 1
@@ -488,7 +500,11 @@ def _validate_sentences(corpus, sentences, errors, validate_upos_lextag, validat
                 elif ss is None:
                     assert_(False, f"Missing supersense annotation in lexical entry: {lex_expr}", token=lex_expr)
                 elif ss not in valid_ss:
-                    assert_(False, f"Invalid supersense(s) in lexical entry: {lex_expr}", token=lex_expr)
+                    if corpus_config['language'] == 'hi':
+                        if lexcat not in ['PRON','PART']:
+                            assert_(False, f"Invalid supersense(s) in lexical entry: {lex_expr}", token=lex_expr)
+                    else:
+                        assert_(False, f"Invalid supersense(s) in lexical entry: {lex_expr}", token=lex_expr)
                 elif (lexcat in ("N", "V") or lexcat.startswith("V.")) and ss2 is not None:
                     assert_(False, f"Noun/verb should not have ss2 annotation: {lex_expr}", token=lex_expr)
                 elif ss2 is not None and ss2 not in valid_ss:
@@ -511,11 +527,21 @@ def _validate_sentences(corpus, sentences, errors, validate_upos_lextag, validat
                             assert_(ss not in ss2_ancestors, f"unexpected construal: {ss} ~> {ss2}", token=lex_expr)
                             assert_(ss2 not in ss_ancestors, f"unexpected construal: {ss} ~> {ss2}", token=lex_expr)
             else:
-                assert_(
-                    ss is None and ss2 is None and lexcat not in ("P", "INF.P", "PP", "POSS", "PRON.POSS"),
-                    f"Invalid supersense(s) in lexical entry",
-                    token=lex_expr,
-                )
+                if corpus_config['language'] == 'hi':
+                    # PRON and PART get supersense labels, but not all of them. Only irregular pronouns and some FOCUS-related particles.
+                    # No easy solution for irregular pronouns. Focus particles TBD in v2.7 guidelines.
+                    if lexcat not in ('PRON','PART'):
+                        assert_(
+                            ss is None and ss2 is None and lexcat not in ("P", "INF.P", "PP", "POSS", "PRON.POSS"),
+                            f"Invalid supersense(s) in lexical entry",
+                            token=lex_expr,
+                        )
+                else:
+                    assert_(
+                        ss is None and ss2 is None and lexcat not in ("P", "INF.P", "PP", "POSS", "PRON.POSS"),
+                        f"Invalid supersense(s) in lexical entry",
+                        token=lex_expr,
+                    )
 
         # check lexcat on single-word expressions
         for swe in sentence["swes"].values():
