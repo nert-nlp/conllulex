@@ -1,7 +1,7 @@
 from conllulex.supersenses import NSS, VSS, PSS
 
 
-def supersenses_for_lexcat(lc,language_code = None):
+def supersenses_for_lexcat(lc):
 
     if lc == "N":
         return NSS
@@ -23,22 +23,6 @@ def supersenses_for_lexcat(lc,language_code = None):
         return PSS
     if lc in ("POSS", "PRON.POSS"):
         return PSS | {"`$"}
-
-    # irregular pronouns in hindi marked for oblique case and with an inflection in place of the post-position (See Yamuna Kachru's Hindi grammar book, section on pronouns).
-    # it's not clear always that a post-position should be extracted from the morphology; i couldn't find any theory for irregular genitive pronouns, though there is some backing for extracting accusative/dative postpositions into a separate token out of the irregular pronoun
-    # And so, all irregular pronouns marked with oblique case and inflected get the prepositional SNACS label. Any feedback appreciated :)
-    if language_code == 'hi' and lc == 'PRON':
-        return PSS
-
-    # PARTicles have been annotated with preposition supersenses. Particles UPOS was determined by UD parsing. May need to revisit in v2.7
-    if language_code == 'hi' and lc == 'PART':
-        PSS.add('p.Focus') #to revisit - version 2.7
-        PSS.add('p.`d')  # to revisit - version 2.7
-        PSS.add('p.`i')  # to revisit - version 2.7
-        return PSS
-
-
-
 
 
 BASE_LEXCATS = {
@@ -67,8 +51,6 @@ BASE_LEXCATS = {
 
 HI_LEXCATS = BASE_LEXCATS
 HI_LEXCATS.add('PART')
-HI_LEXCATS.add('`d')
-HI_LEXCATS.add('`i')
 
 ZH_LEXCATS = {
     "BA", # 把

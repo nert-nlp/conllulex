@@ -64,6 +64,8 @@ LANG_CFG = {
         "extra_prepositional_supersenses": set(),
         "mwe_lexlemma_mismatch_whitelist": {},
         "mwe_lexlemma_mismatch_xforms": [],
+        "mwe_lexlemma_validation_column": "lemma",
+        "lexcat_exception_list":{} # skip invalid supersense check for this list of lexcats
     },
     # Hindi
     "hi": {
@@ -141,6 +143,8 @@ LANG_CFG = {
         #    lambda lemma: lemma.replace("ँ", "ं"),
         #    lambda lemma: lemma.replace("ख्य", "खय"),
         ],
+        "mwe_lexlemma_validation_column": "word",
+        "lexcat_exception_list":{'PRON','PART'}, # skip invalid supersense check for this list of lexcats
     },
     "zh": {
         "permitted_ancestor_combos": {
