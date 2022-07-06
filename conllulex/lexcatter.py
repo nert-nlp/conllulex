@@ -17,10 +17,7 @@ def supersenses_for_lexcat(lc):
             }, lc  # PARSEME 1.1 verbal MWE subtypes
         return VSS
     if lc in ("P", "PP", "INF.P"):
-        PSS.add('p.Focus')  # to revisit - version 2.7
-        PSS.add('p.`d')  # to revisit - version 2.7
-        PSS.add('p.`i')  # to revisit - version 2.7
-        return PSS
+        return PSS | {"p.Focus","p.`d","p.`i"}
     if lc in ("POSS", "PRON.POSS"):
         return PSS | {"`$"}
 
