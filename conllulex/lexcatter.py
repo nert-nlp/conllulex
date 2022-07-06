@@ -1,7 +1,8 @@
 from conllulex.supersenses import NSS, VSS, PSS
-
+from copy import deepcopy
 
 def supersenses_for_lexcat(lc):
+
     if lc == "N":
         return NSS
     if lc == "V" or lc.startswith("V."):
@@ -16,7 +17,7 @@ def supersenses_for_lexcat(lc):
             }, lc  # PARSEME 1.1 verbal MWE subtypes
         return VSS
     if lc in ("P", "PP", "INF.P"):
-        return PSS
+        return PSS | {"p.Focus","p.`d","p.`i"}
     if lc in ("POSS", "PRON.POSS"):
         return PSS | {"`$"}
 
@@ -44,6 +45,9 @@ BASE_LEXCATS = {
     "PUNCT",
     "X",
 }
+
+HI_LEXCATS = deepcopy(BASE_LEXCATS)
+HI_LEXCATS.add('PART')
 
 ZH_LEXCATS = {
     "BA", # 把
@@ -74,4 +78,6 @@ ZH_LEXCATS = {
 def get_lexcat_set(language_code):
     if language_code == "zh":
         return ZH_LEXCATS
+    if language_code == 'hi':
+        return HI_LEXCATS
     return BASE_LEXCATS
