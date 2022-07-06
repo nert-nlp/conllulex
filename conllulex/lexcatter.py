@@ -1,5 +1,5 @@
 from conllulex.supersenses import NSS, VSS, PSS
-
+from copy import deepcopy
 
 def supersenses_for_lexcat(lc):
 
@@ -49,7 +49,7 @@ BASE_LEXCATS = {
     "X",
 }
 
-HI_LEXCATS = BASE_LEXCATS
+HI_LEXCATS = deepcopy(BASE_LEXCATS)
 HI_LEXCATS.add('PART')
 
 ZH_LEXCATS = {
