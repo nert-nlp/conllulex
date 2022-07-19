@@ -125,7 +125,7 @@ del queue, ss, par, descendants
 
 PSS = set(PSS_PARENTS.keys())
 
-assert len(PSS_DEPTH) == len(PSS) == 53
+assert len(PSS_DEPTH) == len(PSS) == 52
 assert max(PSS_DEPTH.values()) == 4
 assert min(PSS_DEPTH.values()) == 1
 
