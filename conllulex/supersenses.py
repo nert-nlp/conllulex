@@ -78,9 +78,10 @@ PSS_TREE = {
         "p.Explanation": {"p.Purpose": {}},
     },
     "p.Participant": {
-        "p.Causer": {"p.Agent": {}},
-        "p.Theme": {"p.Topic": {}},
+        "p.Force": {"p.Agent": {}},
+        "p.Theme": {"p.Content":{},"p.Topic": {}},
         "p.Ancillary": {},
+        "p.Causer": {},
         "p.Stimulus": {},
         "p.Experiencer": {},
         "p.Originator": {},
@@ -91,6 +92,7 @@ PSS_TREE = {
     },
     "p.Configuration": {
         "p.Identity": {},
+        "p.SetIteration": {},
         "p.Species": {},
         "p.Gestalt": {
             "p.Possessor": {},
@@ -124,7 +126,7 @@ del queue, ss, par, descendants
 
 PSS = set(PSS_PARENTS.keys())
 
-assert len(PSS_DEPTH) == len(PSS) == 50
+assert len(PSS_DEPTH) == len(PSS) == 53
 assert max(PSS_DEPTH.values()) == 4
 assert min(PSS_DEPTH.values()) == 1
 

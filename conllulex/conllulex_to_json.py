@@ -147,20 +147,24 @@ def _store_conllulex_columns(sentence, token_dict, token, errors, ss_mapper):
             f"but an out-of-order indexing exists.",
             token=token,
         )
+
         if smwe_position == 1:
-            _append_if_error(
-                errors,
-                sent_id,
-                " " in token["lexlemma"],
-                f"Token is the beginning of a SMWE, but lexlemma doesn't appear to have multiple tokens in it. ",
-                token=token,
-            )
+
             sentence["smwes"][smwe_group]["lexlemma"] = token["lexlemma"]
             _append_if_error(errors, sent_id, token["lexcat"] != "_", f"SMWE token lacks a lexcat. ", token=token)
             sentence["smwes"][smwe_group]["lexcat"] = token["lexcat"]
             sentence["smwes"][smwe_group]["ss"] = ss_mapper(token["ss"]) if token["ss"] != "_" else None
             sentence["smwes"][smwe_group]["ss2"] = ss_mapper(token["ss2"]) if token["ss2"] != "_" else None
         else:
+            if token['deprel'] != 'goeswith': # skip the space check for goeswith expressions.
+                _append_if_error(
+                    errors,
+                    sent_id,
+                    " " in sentence['smwes'][smwe_group]['lexlemma'],
+                    f"Token is the beginning of a SMWE, but lexlemma doesn't appear to have multiple tokens in it. ",
+                    token=token,
+                )
+
             _append_if_error(
                 errors,
                 sent_id,
@@ -413,7 +417,7 @@ def _mwe_lexlemma_valid(lang_config, sentence, smwe):
             value = xform(value)
         return value
 
-    possible_lexlemmas = {" ".join(apply_xforms(xforms, sentence["toks"][i - 1]["lemma"]) for i in smwe["toknums"])}
+    possible_lexlemmas = {" ".join(apply_xforms(xforms, sentence["toks"][i - 1]["lemma"]) for i in smwe["toknums"] if sentence["toks"][i - 1]["lemma"] != '_')}
 
     for lemma, mismatched_lexlemmas in lang_config["mwe_lexlemma_mismatch_whitelist"].items():
         for mismatched_lexlemma in mismatched_lexlemmas:
@@ -460,9 +464,10 @@ def _validate_sentences(corpus, sentences, errors, validate_upos_lextag, validat
             if len(lex_expr['toknums']) > 1:
                 # check against the form directly for hindi MWE expressions only
                 assert_(
-                    lex_expr["lexlemma"] == " ".join(sentence["toks"][i - 1][lang_config['mwe_lexlemma_validation_column']] for i in lex_expr["toknums"]),
+                    lex_expr["lexlemma"] == " ".join(sentence["toks"][i - 1][lang_config['mwe_lexlemma_validation_column']] for i in lex_expr["toknums"] if sentence["toks"][i - 1][lang_config['mwe_lexlemma_validation_column']] != '_' ),
                     f"MWE lemma is incorrect: {lex_expr} vs. {sentence['toks'][lex_expr['toknums'][0] - 1]}",
                     token=lex_expr,
+
                 )
             else:
                 assert_(
@@ -570,6 +575,7 @@ def _validate_sentences(corpus, sentences, errors, validate_upos_lextag, validat
                     token=tok,
                 )
         for smwe in sentence["smwes"].values():
+
             assert_(len(smwe["toknums"]) > 1, "SMWEs must have more than one token", token=smwe)
             correct, possible_lexlemmas, xformed_lexlemma = _mwe_lexlemma_valid(lang_config, sentence, smwe)
             assert_(
