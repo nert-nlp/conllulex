@@ -108,7 +108,6 @@ PSS_TREE = {
         },
         "p.Ensemble": {},
         "p.ComparisonRef": {},
-        "p.RateUnit": {},
         "p.SocialRel": {},
     },
 }
