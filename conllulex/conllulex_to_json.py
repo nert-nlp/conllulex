@@ -514,8 +514,6 @@ def _validate_sentences(corpus, sentences, errors, validate_upos_lextag, validat
                 elif ss is None:
                     assert_(False, f"Missing supersense annotation in lexical entry: {lex_expr}", token=lex_expr)
                 elif ss not in valid_ss:
-                    if sent_id == 'lp_hi_26-73':
-                        print ('here')
                     if lexcat not in lang_config['lexcat_exception_list']:
                         assert_(False, f"Invalid supersense(s) in lexical entry: {lex_expr}", token=lex_expr)
 
