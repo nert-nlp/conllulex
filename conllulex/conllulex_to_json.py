@@ -131,7 +131,7 @@ def _store_morph_and_deps(token_dict, token, errors, is_ellipsis, is_supertoken,
         token_dict["deprel"] = None
 
 
-def _store_conllulex_columns(sentence, token_dict, token, errors, ss_mapper,corpus='streusle'):
+def _store_conllulex_columns(sentence, token_dict, token, errors, ss_mapper,corpus):
     sent_id = sentence["sent_id"]
     token_num = token_dict["#"]
 
