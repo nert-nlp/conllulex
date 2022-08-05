@@ -131,7 +131,7 @@ def _store_morph_and_deps(token_dict, token, errors, is_ellipsis, is_supertoken,
         token_dict["deprel"] = None
 
 
-def _store_conllulex_columns(sentence, token_dict, token, errors, ss_mapper):
+def _store_conllulex_columns(sentence, token_dict, token, errors, ss_mapper,corpus='streusle'):
     sent_id = sentence["sent_id"]
     token_num = token_dict["#"]
 
@@ -181,12 +181,14 @@ def _store_conllulex_columns(sentence, token_dict, token, errors, ss_mapper):
             )
     else:
         token_dict["smwe"] = None
-        _append_if_error(
-            errors,
-            sent_id,
-            token["lexlemma"] == token["lemma"],
-            f"Single-word expression lemma \"{token['lexlemma']}\" doesn't match token lemma \"{token['lemma']}\"",
-            token=token,
+        lang_config, _ = get_config(corpus)
+        if token['upos'] not in lang_config['mwe_lemma_exception_lexcat_list']:
+            _append_if_error(
+                errors,
+                sent_id,
+                token["lexlemma"] == token["lemma"],
+                f"Single-word expression lemma \"{token['lexlemma']}\" doesn't match token lemma \"{token['lemma']}\"",
+                token=token,
         )
         sentence["swes"][token_num]["lexlemma"] = token["lexlemma"]
         _append_if_error(errors, sent_id, token["lexcat"] != "_", f"SWE token must have lexcat.", token=token)
@@ -246,7 +248,9 @@ def _store_conllulex_columns(sentence, token_dict, token, errors, ss_mapper):
             token=token,
         )
 
+
     lextag = token["lextag"]
+
     for m in re.finditer(r"\b[a-z]\.[A-Za-z/-]+", token["lextag"]):
         lextag = lextag.replace(m.group(0), ss_mapper(m.group(0)))
     for m in re.finditer(r"\b([a-z]\.[A-Za-z/-]+)\|\1\b", lextag):
@@ -375,7 +379,7 @@ def _load_sentences(
                     token_dict[nullable_column] = None
 
             if not is_ellipsis and not is_supertoken:
-                _store_conllulex_columns(sentence, token_dict, token, errors, ss_mapper)
+                _store_conllulex_columns(sentence, token_dict, token, errors, ss_mapper,corpus)
                 sentence["toks"].append(token_dict)
             elif is_ellipsis:
                 sentence["etoks"].append(token_dict)
@@ -417,7 +421,7 @@ def _mwe_lexlemma_valid(lang_config, sentence, smwe):
             value = xform(value)
         return value
 
-    possible_lexlemmas = {" ".join(apply_xforms(xforms, sentence["toks"][i - 1]["lemma"]) for i in smwe["toknums"] if sentence["toks"][i - 1]["lemma"] != '_')}
+    possible_lexlemmas = {" ".join(apply_xforms(xforms, sentence["toks"][i - 1][lang_config['mwe_lexlemma_validation_column']]) for i in smwe["toknums"] if sentence["toks"][i - 1]["lemma"] != '_')}
 
     for lemma, mismatched_lexlemmas in lang_config["mwe_lexlemma_mismatch_whitelist"].items():
         for mismatched_lexlemma in mismatched_lexlemmas:
@@ -434,7 +438,12 @@ def _mwe_lexlemma_valid(lang_config, sentence, smwe):
             )
 
     xformed_lexlemma = " ".join(apply_xforms(xforms, x) for x in smwe["lexlemma"].split(" "))
-    return xformed_lexlemma in possible_lexlemmas, possible_lexlemmas, xformed_lexlemma
+    if sentence['toks'][smwe['toknums'][0] - 1]['upos'] in lang_config['mwe_lemma_exception_lexcat_list']: # exception for Hindi Pronouns
+        correct = True
+    else:
+        correct = xformed_lexlemma in possible_lexlemmas
+
+    return correct, possible_lexlemmas, xformed_lexlemma
 
 
 def _validate_sentences(corpus, sentences, errors, validate_upos_lextag, validate_type, override_mwe_render):
@@ -463,18 +472,20 @@ def _validate_sentences(corpus, sentences, errors, validate_upos_lextag, validat
 
             if len(lex_expr['toknums']) > 1:
                 # check against the form directly for hindi MWE expressions only
-                assert_(
-                    lex_expr["lexlemma"] == " ".join(sentence["toks"][i - 1][lang_config['mwe_lexlemma_validation_column']] for i in lex_expr["toknums"] if sentence["toks"][i - 1][lang_config['mwe_lexlemma_validation_column']] != '_' ),
-                    f"MWE lemma is incorrect: {lex_expr} vs. {sentence['toks'][lex_expr['toknums'][0] - 1]}",
-                    token=lex_expr,
+                if lex_expr["lexcat"] not in lang_config['mwe_lemma_exception_lexcat_list']:
+                    assert_(
+                        lex_expr["lexlemma"] == " ".join(sentence["toks"][i - 1][lang_config['mwe_lexlemma_validation_column']] for i in lex_expr["toknums"] if sentence["toks"][i - 1][lang_config['mwe_lexlemma_validation_column']] != '_' ),
+                        f"MWE lemma is incorrect: {lex_expr} vs. {sentence['toks'][lex_expr['toknums'][0] - 1]}",
+                        token=lex_expr,
 
-                )
+                    )
             else:
-                assert_(
-                    lex_expr["lexlemma"] == " ".join(sentence["toks"][i - 1]["lemma"] for i in lex_expr["toknums"]),
-                    f"MWE lemma is incorrect: {lex_expr} vs. {sentence['toks'][lex_expr['toknums'][0] - 1]}",
-                    token=lex_expr,
-                )
+                if lex_expr["lexcat"] not in lang_config['mwe_lemma_exception_lexcat_list']:
+                    assert_(
+                        lex_expr["lexlemma"] == " ".join(sentence["toks"][i - 1]["lemma"] for i in lex_expr["toknums"]),
+                        f"MWE lemma is incorrect: {lex_expr} vs. {sentence['toks'][lex_expr['toknums'][0] - 1]}",
+                        token=lex_expr,
+                    )
             lexcat = lex_expr["lexcat"]
             if lexcat.endswith("!@"):
                 lexcat_tbd_count += 1
@@ -486,9 +497,10 @@ def _validate_sentences(corpus, sentences, errors, validate_upos_lextag, validat
             elif lexcat in ["P", "PP"] and "P" not in corpus_config["supersense_annotated"]:
                 valid_ss = set()
             else:
-                valid_ss = supersenses_for_lexcat(lexcat)
+                valid_ss = supersenses_for_lexcat(lexcat,corpus_config['language'])
                 if lexcat in ["P", "PP"] and "P" in corpus_config["supersense_annotated"]:
                     valid_ss = valid_ss | lang_config["extra_prepositional_supersenses"]
+
             if "V" in corpus_config["supersense_annotated"] and lexcat == "V":
                 assert_(
                     len(lex_expr["toknums"]) == 1,
@@ -502,6 +514,8 @@ def _validate_sentences(corpus, sentences, errors, validate_upos_lextag, validat
                 elif ss is None:
                     assert_(False, f"Missing supersense annotation in lexical entry: {lex_expr}", token=lex_expr)
                 elif ss not in valid_ss:
+                    if sent_id == 'lp_hi_26-73':
+                        print ('here')
                     if lexcat not in lang_config['lexcat_exception_list']:
                         assert_(False, f"Invalid supersense(s) in lexical entry: {lex_expr}", token=lex_expr)
 
@@ -528,8 +542,6 @@ def _validate_sentences(corpus, sentences, errors, validate_upos_lextag, validat
                             assert_(ss2 not in ss_ancestors, f"unexpected construal: {ss} ~> {ss2}", token=lex_expr)
             else:
                 if lexcat not in lang_config['lexcat_exception_list']:
-                    # PRON and PART get supersense labels, but not all of them. Only irregular pronouns and some FOCUS-related particles.
-                    # No easy solution for irregular pronouns. Focus particles TBD in v2.7 guidelines.
                     assert_(
                         ss is None and ss2 is None and lexcat not in ("P", "INF.P", "PP", "POSS", "PRON.POSS"),
                         f"Invalid supersense(s) in lexical entry",
@@ -578,6 +590,7 @@ def _validate_sentences(corpus, sentences, errors, validate_upos_lextag, validat
 
             assert_(len(smwe["toknums"]) > 1, "SMWEs must have more than one token", token=smwe)
             correct, possible_lexlemmas, xformed_lexlemma = _mwe_lexlemma_valid(lang_config, sentence, smwe)
+
             assert_(
                 correct,
                 "lexlemma appears incorrect for smwe",

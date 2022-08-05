@@ -1,7 +1,7 @@
 from conllulex.supersenses import NSS, VSS, PSS
 from copy import deepcopy
 
-def supersenses_for_lexcat(lc):
+def supersenses_for_lexcat(lc,language=None):
 
     if lc == "N":
         return NSS
@@ -16,10 +16,12 @@ def supersenses_for_lexcat(lc):
                 "V.IAV",
             }, lc  # PARSEME 1.1 verbal MWE subtypes
         return VSS
-    if lc in ("P", "PP", "INF.P"):
+    if lc in ("P", "PP", "INF.P","PART.FOC"):
         return PSS | {"p.Focus","p.`d","p.`i"}
     if lc in ("POSS", "PRON.POSS"):
         return PSS | {"`$"}
+    if lc == 'PRON' and language == 'hi': # for Hindi
+        return PSS | {"p.Focus",'p.`d'}
 
 
 BASE_LEXCATS = {
@@ -48,6 +50,11 @@ BASE_LEXCATS = {
 
 HI_LEXCATS = deepcopy(BASE_LEXCATS)
 HI_LEXCATS.add('PART')
+HI_LEXCATS.add('PRON.NOM')
+HI_LEXCATS.add('PRON.OBL') # 'koi','usi', etc
+HI_LEXCATS.add('PRON.WH') # wh-pronouns 'kahaan','kaise', etc
+HI_LEXCATS.add('PRON.REFL') # reflexive pronoun 'apna', 'ap'
+HI_LEXCATS.add('PART.FOC')
 
 ZH_LEXCATS = {
     "BA", # 把
