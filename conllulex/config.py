@@ -65,6 +65,7 @@ LANG_CFG = {
         "mwe_lexlemma_mismatch_whitelist": {},
         "mwe_lexlemma_mismatch_xforms": [],
         "mwe_lexlemma_validation_column": "lemma",
+        "mwe_lemma_exception_lexcat_list": set(),
         "lexcat_exception_list":{} # skip invalid supersense check for this list of lexcats
     },
     # Hindi
@@ -110,8 +111,9 @@ LANG_CFG = {
             ("PART", "P"),  # से
         },
         "mismatched_lexcat_exception_checks": [
-            lambda d: (d["lexcat"] == "P" and d["upos"] == "PRON"),  # possessive pronouns
-            lambda d: (d["lexcat"] == "ADV" and d["upos"] == "PART"),  # ही
+            lambda d: (d["lexcat"] == "P" and d["upos"] in ("SCONJ",'PART','ADJ','ADV')),
+            lambda d: (d["lexcat"] in ("PRON.NOM",'PRON.OBL','PRON.WH','PRON.REFL') and d["upos"] == "PRON"),
+            lambda d: (d["lexcat"] in ('ADV','PART.FOC') and d["upos"] == "PART"),
         ],
         # TODO is this really needed? These probably ought to just live in supersenses.py
         "extra_prepositional_supersenses": {"p.Focus", "p.NONSNACS"},
@@ -119,19 +121,19 @@ LANG_CFG = {
         # the first item is the lemma and the second item is a list of forms which are
         # acceptable lexlemmas for that lemma.
         "mwe_lexlemma_mismatch_whitelist": {
-            "का": ["के", "की"],
-            "मैं": ["के", "की"],
-            "हम": ["के", "की", "में", "से", "को"],
-            "तू": ["के", "की", "में", "से", "को"],
-            "तुम": ["के", "की", "में", "से", "को"],
-            "आप": ["के", "की", "में", "से", "को"],
-            "वह": ["के", "की", "में", "से", "को"],
-            "यह": ["के", "की", "में", "से", "को"],
-            "वे": ["के", "की", "में", "से", "को"],
-            "ये": ["के", "की", "में", "से", "को"],
-            "अपना": ["के", "की", "में", "से", "को"],
-            "जो": ["के", "की", "में", "से", "को"],
-            "सबसे": ["से"],
+            #"का": ["के", "की"],
+            #"मैं": ["के", "की"],
+            #"हम": ["के", "की", "में", "से", "को"],
+            #"तू": ["के", "की", "में", "से", "को"],
+            #"तुम": ["के", "की", "में", "से", "को"],
+            #"आप": ["के", "की", "में", "से", "को"],
+            #"वह": ["के", "की", "में", "से", "को"],
+            #"यह": ["के", "की", "में", "से", "को"],
+            #"वे": ["के", "की", "में", "से", "को"],
+            #"ये": ["के", "की", "में", "से", "को"],
+            #"अपना": ["के", "की", "में", "से", "को"],
+            #"जो": ["के", "की", "में", "से", "को"],
+            #"सबसे": ["से"],
         },
         # Like above, but for lambdas applied to individual lemmas. All lambdas will be applied to both
         # the lexlemma computed from each token's lemma and the given lexlemma.
@@ -144,7 +146,8 @@ LANG_CFG = {
         #    lambda lemma: lemma.replace("ख्य", "खय"),
         ],
         "mwe_lexlemma_validation_column": "word",
-        "lexcat_exception_list":{'PRON','PART'}, # skip invalid supersense check for this list of lexcats
+        "mwe_lemma_exception_lexcat_list": {"PRON"},
+        "lexcat_exception_list":{}, # skip invalid supersense check for this list of lexcats
     },
     "zh": {
         "permitted_ancestor_combos": {
@@ -194,6 +197,7 @@ LANG_CFG = {
         "mwe_lexlemma_mismatch_whitelist": {},
         "mwe_lexlemma_mismatch_xforms": [],
         "mwe_lexlemma_validation_column": "lemma",
+        "mwe_lemma_exception_lexcat_list": set(),
         "lexcat_exception_list":{}, # skip invalid supersense check for this list of lexcats
     },
 }
