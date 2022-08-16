@@ -457,7 +457,8 @@ def _validate_sentences(corpus, sentences, errors, validate_upos_lextag, validat
     lexcat_tbd_count = 0
 
     lang_config, corpus_config = get_config(corpus)
-    all_lexcats = get_lexcat_set(corpus_config["language"])
+    language = corpus_config["language"]
+    all_lexcats = get_lexcat_set(language)
 
     for sentence in sentences:
         sent_id = sentence["sent_id"]
@@ -501,14 +502,18 @@ def _validate_sentences(corpus, sentences, errors, validate_upos_lextag, validat
             if lexcat.endswith("!@"):
                 lexcat_tbd_count += 1
 
-            if lexcat.startswith("V") and "V" not in corpus_config["supersense_annotated"]:
-                valid_ss = set()
-            elif lexcat == "N" and "N" not in corpus_config["supersense_annotated"]:
-                valid_ss = set()
-            elif lexcat in ["P", "PP"] and "P" not in corpus_config["supersense_annotated"]:
+            # Determine the set of supersenses available to this expression
+            if (
+                lexcat.startswith("V")
+                and "V" not in corpus_config["supersense_annotated"]
+                or lexcat == "N"
+                and "N" not in corpus_config["supersense_annotated"]
+                or lexcat in ["P", "PP"]
+                and "P" not in corpus_config["supersense_annotated"]
+            ):
                 valid_ss = set()
             else:
-                valid_ss = supersenses_for_lexcat(lexcat, corpus_config["language"])
+                valid_ss = supersenses_for_lexcat(lexcat, language)
                 if lexcat in ["P", "PP"] and "P" in corpus_config["supersense_annotated"]:
                     valid_ss = valid_ss | lang_config["extra_prepositional_supersenses"]
 
@@ -528,7 +533,7 @@ def _validate_sentences(corpus, sentences, errors, validate_upos_lextag, validat
                     if lexcat not in lang_config["lexcat_exception_list"]:
                         assert_(False, f"Invalid supersense(s) in lexical entry: {lex_expr}", token=lex_expr)
 
-                elif (lexcat in ("N", "V") or lexcat.startswith("V.")) and ss2 is not None:
+                elif language not in ["la"] and (lexcat in ("N", "V") or lexcat.startswith("V.")) and ss2 is not None:
                     assert_(False, f"Noun/verb should not have ss2 annotation: {lex_expr}", token=lex_expr)
                 elif ss2 is not None and ss2 not in valid_ss:
                     assert_(False, f"Invalid ss2: {lex_expr}", token=lex_expr)
@@ -553,7 +558,7 @@ def _validate_sentences(corpus, sentences, errors, validate_upos_lextag, validat
                 if lexcat not in lang_config["lexcat_exception_list"]:
                     assert_(
                         ss is None and ss2 is None and lexcat not in ("P", "INF.P", "PP", "POSS", "PRON.POSS"),
-                        f"Invalid supersense(s) in lexical entry",
+                        f"Invalid supersense(s) in lexical entry.",
                         token=lex_expr,
                     )
 

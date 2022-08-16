@@ -14,6 +14,115 @@ from conllulex.supersenses import PSS
 from conllulex.tagging import sent_tags
 
 
+def compute_lexcat_latin(t, tid, smweGroupToks, poses, rels):
+    smwe = t["smwe"]
+    tokNum = tid
+    ss = t["ss"]
+    lexlemma = t["lexlemma"]
+    upos = t["upos"]
+    xpos = t["xpos"]
+    feats = t["feats"]
+
+    if smwe != "_" and not smwe.endswith(":1"):
+        # non-initial token in MWE
+        return "_"
+
+    # Rule 1
+    lc = {
+        "`a": "AUX",
+        "`c": "CCONJ",
+        "`d": "DISC",
+        "`i": "INF",
+        "`j": "ADJ",
+        "`n": "N",
+        "`o": "PRON",
+        "`r": "ADV",
+        "`v": "V",
+    }
+    if ss in lc:
+        return lc[ss]
+
+    # Rule 3
+    if ss == "`$" or ss == "??" or ss.startswith("p.") or upos == "ADP":
+        lc = {
+            "PRP$": "PRON.POSS",
+            "WP$": "PRON.POSS",
+            "POS": "POSS",
+            "TO": "INF.P",
+        }.get(xpos)
+        if lc is not None:
+            return lc
+        assert ss != "`$"
+        if smwe != "_":
+            if poses[smweGroupToks[-1] - 1][0] in ("ADP", "SCONJ"):
+                return "P"
+            return "PP"
+        if upos in ["NOUN", "PROPN"]:
+            return "N"
+        if upos == "PRON":
+            return "PRON"
+        if upos == "VERB":
+            verb_form = feats.get("VerbForm")
+            tense = feats.get("Tense")
+            if verb_form is None:
+                return "V"
+            if verb_form == "Part":
+                return "V.PART"
+            if verb_form == "Ger":
+                return "V.GER"
+        if upos == "ADP":
+            return "P"
+        return upos
+    # End rule 3
+
+    # Rule 2
+    # Extension to rule 2 made for PASTRIE
+    if upos == "AUX":
+        return "AUX"
+    if upos in ["NOUN", "PROPN"]:
+        return "N"
+    if upos == "VERB" or xpos[0:2] == "VB":
+        return "V"
+
+    if upos == "PART":
+        if lexlemma == "to":
+            return "INF"
+        return "ADV"
+    if smwe != "_":
+        if upos == "DET":
+            if lexlemma in (
+                "a lot",
+                "a couple",
+                "a few",
+                "a little",
+                "a bit",
+                "a number",
+                "a bunch",
+            ):
+                return "DET"
+            elif lexlemma in (
+                "no one",
+                "every one",
+                "every thing",
+                "each other",
+                "some place",
+            ):
+                return "PRON"
+        if upos == "AUX":
+            if lexlemma in ("might as well",):
+                return "AUX"
+
+        head, rel = rels[tokNum - 1]
+        if head in smweGroupToks:
+            return compute_lexcat(head, "_", smweGroupToks, ss, lexlemma, poses, rels)
+        else:
+            assert upos != "X"  # X is used for goeswith (also 'sub <advmod par').
+            # In those cases the head should be in the MWE.
+        # return "!@"
+    return upos
+    ...
+
+
 # modified from streusle ----------------------------------------------------------------------
 def compute_lexcat(tokNum, smwe, smweGroupToks, ss, lexlemma, poses, rels):
     """
@@ -193,6 +302,27 @@ def add_wlemma(sentences):
                 t["wlemma"] = " ".join([get_token(sentence, tid)["lemma"] for tid in wmwe_tok_ids])
 
 
+def add_lexcat_la(sentences):
+    for sentence in sentences:
+        smwes, _ = read_mwes(sentence)
+        poses = [(t["upos"], t["xpos"]) for t in sentence]
+        deps = [(t["head"], t["deprel"]) for t in sentence]
+        for t in sentence:
+            smwe_tok_ids = "_" if ":" not in t["smwe"] else smwes[t["smwe"].split(":")[0]]
+            t["lexcat"] = compute_lexcat_latin(t, t["id"], smwe_tok_ids, poses, deps)
+
+            if t["ss"][0] == "`":
+                # If it was for `i, force SCONJ+CC pos tags
+                if t["ss"] == "`i" and t["form"] == "for":
+                    t["upos"] = "SCONJ"
+                    t["xpos"] = "CC"
+
+                if not (t["ss"] in ["`$", "p.`$"] and t["ss2"] in ["`$", "p.`$"]):
+                    # wipe away the supersense columns
+                    t["ss"] = "_"
+                    t["ss2"] = "_"
+
+
 def add_lexcat(sentences):
     for sentence in sentences:
         smwes, _ = read_mwes(sentence)
@@ -369,6 +499,7 @@ SUBTASKS = {
     "add_lexlemma": add_lexlemma,
     "add_wlemma": add_wlemma,
     "prefix_prepositional_supersenses": prefix_prepositional_supersenses,
+    "add_lexcat_la": add_lexcat_la,
     "add_lexcat": add_lexcat,
     "add_lextag": add_lextag,
     "renumber_mwes": renumber_mwes,
