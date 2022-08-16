@@ -1,7 +1,9 @@
-from conllulex.supersenses import NSS, VSS, PSS
 from copy import deepcopy
 
-def supersenses_for_lexcat(lc,language=None):
+from conllulex.supersenses import NSS, PSS, VSS
+
+
+def supersenses_for_lexcat(lc, language=None):
 
     if lc == "N":
         return NSS
@@ -16,12 +18,12 @@ def supersenses_for_lexcat(lc,language=None):
                 "V.IAV",
             }, lc  # PARSEME 1.1 verbal MWE subtypes
         return VSS
-    if lc in ("P", "PP", "INF.P","PART.FOC"):
-        return PSS | {"p.Focus","p.`d","p.`i"}
+    if lc in ("P", "PP", "INF.P", "PART.FOC"):
+        return PSS | {"p.Focus", "p.`d", "p.`i"}
     if lc in ("POSS", "PRON.POSS"):
         return PSS | {"`$"}
-    if lc == 'PRON' and language == 'hi': # for Hindi
-        return PSS | {"p.Focus",'p.`d'}
+    if lc == "PRON" and language == "hi":  # for Hindi
+        return PSS | {"p.Focus", "p.`d"}
 
 
 BASE_LEXCATS = {
@@ -49,19 +51,19 @@ BASE_LEXCATS = {
 }
 
 HI_LEXCATS = deepcopy(BASE_LEXCATS)
-HI_LEXCATS.add('PART')
-HI_LEXCATS.add('PRON.NOM')
-HI_LEXCATS.add('PRON.OBL') # 'koi','usi', etc
-HI_LEXCATS.add('PRON.WH') # wh-pronouns 'kahaan','kaise', etc
-HI_LEXCATS.add('PRON.REFL') # reflexive pronoun 'apna', 'ap'
-HI_LEXCATS.add('PART.FOC')
+HI_LEXCATS.add("PART")
+HI_LEXCATS.add("PRON.NOM")
+HI_LEXCATS.add("PRON.OBL")  # 'koi','usi', etc
+HI_LEXCATS.add("PRON.WH")  # wh-pronouns 'kahaan','kaise', etc
+HI_LEXCATS.add("PRON.REFL")  # reflexive pronoun 'apna', 'ap'
+HI_LEXCATS.add("PART.FOC")
 
 ZH_LEXCATS = {
-    "BA", # 把
-    "DE", # DER, DEC, DEG, DEV
-    "LB", # long bei 被
-    "LC", # localizer
-    "MSP", # suo 所 lai 来
+    "BA",  # 把
+    "DE",  # DER, DEC, DEG, DEV
+    "LB",  # long bei 被
+    "LC",  # localizer
+    "MSP",  # suo 所 lai 来
     "N",
     "PRON",
     "V",
@@ -85,6 +87,6 @@ ZH_LEXCATS = {
 def get_lexcat_set(language_code):
     if language_code == "zh":
         return ZH_LEXCATS
-    if language_code == 'hi':
+    if language_code == "hi":
         return HI_LEXCATS
     return BASE_LEXCATS

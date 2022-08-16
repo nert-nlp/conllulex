@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-import sys, fileinput, json, re
+import fileinput
+import json
+import re
+import sys
 from itertools import chain
 
 from conllulex.supersenses import makesslabel

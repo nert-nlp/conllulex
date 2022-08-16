@@ -8,8 +8,8 @@ from collections import defaultdict
 import conllu
 from tqdm import tqdm
 
-from conllulex.reading import get_conllulex_tokenlists
 from conllulex.mwe_render import render
+from conllulex.reading import get_conllulex_tokenlists
 from conllulex.supersenses import PSS
 from conllulex.tagging import sent_tags
 

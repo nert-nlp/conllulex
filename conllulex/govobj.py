@@ -75,7 +75,8 @@ JSON output sample for 'my grandfather'--the added information is under "heurist
 @since: 2018-01-31
 """
 
-import sys, json
+import json
+import sys
 from collections import Counter
 from itertools import chain
 

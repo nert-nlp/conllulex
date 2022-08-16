@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 # coding=utf-8
 
-import os, sys
+import os
+import sys
 
 I_BAR, I_TILDE, i_BAR, i_TILDE = "I_", "I~", "i_", "i~"
 

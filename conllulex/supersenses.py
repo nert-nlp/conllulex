@@ -2,8 +2,6 @@
 Information about and utilities for supersense categories for lexical expressions in the corpus.
 """
 
-import sys
-
 SPECIAL_LABELS = {
     "??",  # a semantic supersense could not be assigned:
     # e.g. due to unintelligible/unclear context, missing word, or marginal or nonnative usage
@@ -79,7 +77,7 @@ PSS_TREE = {
     },
     "p.Participant": {
         "p.Force": {"p.Agent": {}},
-        "p.Theme": {"p.Content":{},"p.Topic": {}},
+        "p.Theme": {"p.Content": {}, "p.Topic": {}},
         "p.Ancillary": {},
         "p.Causer": {},
         "p.Stimulus": {},
