@@ -24,6 +24,7 @@ pip install git+https://github.com/nert-nlp/conllulex.git
 You will now have the following commands on your path:
 
 ```
+glam2conllulex
 conllulex-enrich
 conllulex2json
 conllulex-govobj
