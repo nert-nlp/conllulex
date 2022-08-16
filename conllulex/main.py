@@ -1,4 +1,5 @@
 import sys
+from collections import defaultdict
 
 import click
 
@@ -11,6 +12,68 @@ from conllulex.govobj import govobj_enhance
 @click.group()
 def top():
     pass
+
+
+def _layer_by_name(layers, name):
+    for x in layers:
+        if x["name"] == name:
+            return x
+    return None
+
+
+@click.command(help="Take a Glam import (github.com/lgessler/glam) and format it as CoNLL-U-Lex")
+@click.argument("input-filepath")
+@click.argument("output-filepath")
+@click.option("--text-layer-name", default="Text")
+@click.option("--token-layer-name", default="Tokens")
+@click.option("--ss1-layer-name", default="Scene Role")
+@click.option("--ss2-layer-name", default="Function")
+def glam2conllulex(input_filepath, output_filepath, text_layer_name, token_layer_name, ss1_layer_name, ss2_layer_name):
+    import json
+
+    with open(input_filepath, "r") as f:
+        d = json.load(f)
+    doc_name = d["name"].replace(" ", "-").lower()
+    text_layer = _layer_by_name(d["text-layers"], text_layer_name)
+    token_layer = _layer_by_name(text_layer["token-layers"], token_layer_name)
+    ss1_layer = _layer_by_name(token_layer["span-layers"], ss1_layer_name)
+    ss2_layer = _layer_by_name(token_layer["span-layers"], ss2_layer_name)
+
+    text = text_layer["text"]["body"]
+    text_lines = text.split("\n")
+    tokens = sorted([t for t in token_layer["tokens"]], key=lambda t: t["begin"])
+    ss1_spans = {s["tokens"][0]["id"]: s for s in ss1_layer["spans"] if s["value"] != ""}
+    ss2_spans = {s["tokens"][0]["id"]: s for s in ss2_layer["spans"] if s["value"] != ""}
+
+    # Begin constructing token-span bundles
+    tokens_by_sentence = defaultdict(list)
+    for token in tokens:
+        if token["value"].strip() == "":
+            continue
+        s_index = text[: token["begin"]].count("\n")
+        tid = token["id"]
+        token["ss1"] = ss1_spans[tid]["value"] if tid in ss1_spans and ss1_spans[tid]["value"] != "" else None
+        token["ss2"] = ss2_spans[tid]["value"] if tid in ss2_spans and ss2_spans[tid]["value"] != "" else None
+        tokens_by_sentence[s_index].append(token)
+
+    outlines = []
+    outlines.append(f"# newdoc id = {doc_name}")
+    for s_index, tokens in tokens_by_sentence.items():
+        outlines.append(f"# sent_id = {doc_name}-{s_index + 1}")
+        outlines.append(f"# text = {text_lines[s_index]}")
+        for i, token in enumerate(tokens):
+            cols = ["_"] * 19
+            cols[0] = f"{i + 1}"
+            cols[1] = f"{token['value']}"
+            if token["ss1"] is not None:
+                cols[13] = token["ss1"]
+            if token["ss2"] is not None:
+                cols[14] = token["ss2"]
+            outlines.append("\t".join(cols))
+        outlines.append("")
+
+    with open(output_filepath, "w") as f:
+        f.write(("\n".join(outlines)) + "\n")
 
 
 @click.command(
@@ -130,6 +193,7 @@ def govobj(input_path, output_path, edeps):
     govobj_enhance(input_path, output_path, edeps)
 
 
+top.add_command(glam2conllulex)
 top.add_command(enrich)
 top.add_command(conllulex2json)
 top.add_command(govobj)
