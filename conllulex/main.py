@@ -29,7 +29,15 @@ def _layer_by_name(layers, name):
 @click.option("--ss1-layer-name", default="Scene Role")
 @click.option("--ss2-layer-name", default="Function")
 @click.option("--translation-layer-name", default="Translation")
-def glam2conllulex(input_filepath, output_filepath, text_layer_name, token_layer_name, ss1_layer_name, ss2_layer_name, translation_layer_name):
+def glam2conllulex(
+    input_filepath,
+    output_filepath,
+    text_layer_name,
+    token_layer_name,
+    ss1_layer_name,
+    ss2_layer_name,
+    translation_layer_name,
+):
     import json
 
     with open(input_filepath, "r") as f:

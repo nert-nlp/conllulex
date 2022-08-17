@@ -186,7 +186,7 @@ LANG_CFG = {
             ("PART", "ADV"),  # for `non`
             ("DET", "DET.SUBST"),
             ("ADJ", "ADJ.SUBST"),
-            ("PRON", "PRON.MODIFIER"),
+            ("PRON", "PRON.TARGET"),
             ("NOUN", "N.TARGET"),
         },
         "mismatched_lexcat_exception_checks": [],

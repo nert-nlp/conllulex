@@ -60,7 +60,7 @@ def compute_lexcat_latin(t, tid, smweGroupToks, poses, rels):
         if upos in ["NOUN", "PROPN"]:
             return "N.TARGET"
         if upos == "PRON":
-            return "PRON"
+            return "PRON.TARGET"
         if upos == "VERB":
             verb_form = feats.get("VerbForm")
             tense = feats.get("Tense")
@@ -80,10 +80,6 @@ def compute_lexcat_latin(t, tid, smweGroupToks, poses, rels):
             return "DET.SUBST"
         return upos
     # End rule 3
-
-    # If it's a pronoun without an annotation, assume it's a modifier and not a standalone pronoun
-    if upos == "PRON":
-        return "PRON.MODIFIER"
 
     # Rule 2
     # Extension to rule 2 made for PASTRIE

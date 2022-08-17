@@ -9,9 +9,7 @@ def supersenses_for_lexcat(lc, language=None):
         else:
             return NSS
 
-    if language in ["la"] and lc == "N.TARGET":
-        return PSS
-    if language in ["la"] and lc in ["ADJ.SUBST", "DET.SUBST", "PRON"]:
+    if language in ["la"] and lc in ["N.TARGET", "ADJ.SUBST", "DET.SUBST", "PRON.TARGET"]:
         return PSS
 
     if lc == "V" or lc.startswith("V."):
@@ -103,11 +101,11 @@ ZH_LEXCATS = {
 LA_LEXCATS = BASE_LEXCATS | {
     "V.GER",
     "V.PART",
-    "ADJ.SUBST",      # "substantive" adjective like "bona"--should be annotated
-    "DET.SUBST",      # "substantive" determiner like "haec"
-    "V.COREINF",      # infinitive when in subject or object position
-    "N.TARGET",       # Noun that is an annotation target
-    "PRON.MODIFIER",  # pronoun used as a modifier, like "qui homines" as opposed to "ego"
+    "ADJ.SUBST",  # "substantive" adjective like "bona"--should be annotated
+    "DET.SUBST",  # "substantive" determiner like "haec"
+    "V.COREINF",  # infinitive when in subject or object position
+    "N.TARGET",  # Noun that is an annotation target
+    "PRON.TARGET",  # pronoun when it is standalone, i.e. not used as a modifier, like "qui homines", and not obj of a preposition
 }
 
 _language_map = {
