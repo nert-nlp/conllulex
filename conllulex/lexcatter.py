@@ -2,15 +2,13 @@ from conllulex.supersenses import NSS, PSS, VSS
 
 
 def supersenses_for_lexcat(lc, language=None):
-    # TODO this logic should really be moved into config somehow
-    if lc == "N":
-        if language in ["la"]:
-            return set()
-        else:
-            return NSS
+    if language == "la":
+        if lc in ["P", "N.P", "PRON.P", "SUBST", "V.GER"]:
+            return PSS
+        return set()
 
-    if language in ["la"] and lc in ["N.TARGET", "ADJ.SUBST", "DET.SUBST", "PRON.TARGET"]:
-        return PSS
+    if lc == "N":
+        return NSS
 
     if lc == "V" or lc.startswith("V."):
         if lc != "V":
@@ -23,12 +21,6 @@ def supersenses_for_lexcat(lc, language=None):
                     "V.LVC.cause",
                     "V.IAV",
                 }, lc  # PARSEME 1.1 verbal MWE subtypes
-            if language == "la":
-                assert lc in {"V.PART", "V.GER", "V.COREINF"}, lc
-                return PSS
-        else:
-            if language == "la":
-                return set()
         return VSS
     if lc in ("P", "PP", "INF.P", "PART.FOC"):
         return PSS | {"p.Focus", "p.`d", "p.`i"}
@@ -118,13 +110,14 @@ LA_LEXCATS = {
     "X",
 
     # New for Latin
-    "V.GER",
-    "V.PART",
-    "ADJ.SUBST",  # "substantive" adjective like "bona"--should be annotated
-    "DET.SUBST",  # "substantive" determiner like "haec"
-    "V.COREINF",  # infinitive when in subject or object position
-    "N.TARGET",  # Noun that is an annotation target
-    "PRON.TARGET",  # pronoun when it is standalone, i.e. not used as a modifier, like "qui homines", and not obj of a preposition
+    "V.GER",  # Gerunds, e.g. eundo. Substantive gerundives like "clamantis" in "vox in deserto clamantis" are SUBST
+    "SUBST",  # This covers participles, adjectives, and determiners that lack a noun head
+    "V.SUBJINF",  # infinitive when in subject position
+    # Noun that is an annotation target
+    "N.P",
+    # pronoun when it is standalone--this excludes cases when its marking is agreeing with a syntactic head,
+    # like "qui homines", and when it is the obj of a preposition
+    "PRON.P",
 }
 
 _language_map = {

@@ -58,26 +58,27 @@ def compute_lexcat_latin(t, tid, smweGroupToks, poses, rels):
                 return "P"
             return "PP"
         if upos in ["NOUN", "PROPN"]:
-            return "N.TARGET"
+            return "N.P"
         if upos == "PRON":
-            return "PRON.TARGET"
+            return "PRON.P"
         if upos == "VERB":
             verb_form = feats.get("VerbForm")
             tense = feats.get("Tense")
             if verb_form is None:
                 return "V"
             if verb_form == "Part":
-                return "V.PART"
+                return "SUBST"
             if verb_form == "Ger":
-                return "V.GER"
+                # Needs to be manually disambiguated
+                return "V.GER|?|SUBST"
             if verb_form == "Inf":
-                return "V.COREINF"
+                return "V.SUBJINF"
         if upos == "ADP":
             return "P"
         if upos == "ADJ":
-            return "ADJ.SUBST"
+            return "SUBST"
         if upos == "DET":
-            return "DET.SUBST"
+            return "SUBST"
         return upos
     # End rule 3
 
