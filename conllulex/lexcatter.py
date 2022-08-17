@@ -5,11 +5,15 @@ def supersenses_for_lexcat(lc, language=None):
     # TODO this logic should really be moved into config somehow
     if lc == "N":
         if language in ["la"]:
-            return PSS
+            return set()
         else:
             return NSS
-    if language in ["la"] and lc in ["ADJ.SUBST", "DET.SUBST"]:
+
+    if language in ["la"] and lc == "N.TARGET":
         return PSS
+    if language in ["la"] and lc in ["ADJ.SUBST", "DET.SUBST", "PRON"]:
+        return PSS
+
     if lc == "V" or lc.startswith("V."):
         if lc != "V":
             if language == "en":
@@ -22,7 +26,7 @@ def supersenses_for_lexcat(lc, language=None):
                     "V.IAV",
                 }, lc  # PARSEME 1.1 verbal MWE subtypes
             if language == "la":
-                assert lc in {"V.PART", "V.GER"}, lc
+                assert lc in {"V.PART", "V.GER", "V.COREINF"}, lc
                 return PSS
         else:
             if language == "la":
@@ -35,8 +39,6 @@ def supersenses_for_lexcat(lc, language=None):
     if lc == "PRON":  # for Hindi
         if language == "hi":
             return PSS | {"p.Focus", "p.`d"}
-        if language == "la":
-            return PSS
     return set()
 
 
@@ -101,8 +103,11 @@ ZH_LEXCATS = {
 LA_LEXCATS = BASE_LEXCATS | {
     "V.GER",
     "V.PART",
-    "ADJ.SUBST",  # "substantive" adjective like "bona"--should be annotated
-    "DET.SUBST",  # "substantive" determiner like "haec"
+    "ADJ.SUBST",      # "substantive" adjective like "bona"--should be annotated
+    "DET.SUBST",      # "substantive" determiner like "haec"
+    "V.COREINF",      # infinitive when in subject or object position
+    "N.TARGET",       # Noun that is an annotation target
+    "PRON.MODIFIER",  # pronoun used as a modifier, like "qui homines" as opposed to "ego"
 }
 
 _language_map = {
