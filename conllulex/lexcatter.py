@@ -98,7 +98,26 @@ ZH_LEXCATS = {
     "X",
 }
 
-LA_LEXCATS = BASE_LEXCATS | {
+LA_LEXCATS = {
+    # From base
+    "N",
+    "PRON",
+    "V",
+    "P",
+    "DISC",
+    "AUX",
+    "ADJ",
+    "ADV",
+    "DET",
+    "CCONJ",
+    "SCONJ",
+    "INTJ",
+    "NUM",
+    "SYM",
+    "PUNCT",
+    "X",
+
+    # New for Latin
     "V.GER",
     "V.PART",
     "ADJ.SUBST",  # "substantive" adjective like "bona"--should be annotated
