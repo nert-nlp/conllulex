@@ -333,7 +333,7 @@ CORPUS_CFG = {
             "add_lexcat_la",
             "add_lextag",
         ],
-        "supersense_annotated": ["P", "N", "V"],
+        "supersense_annotated": ["P"],
         "require_sentence_numbers_from_1": True,
         "require_sentence_numbers_consecutive": True,
     },
