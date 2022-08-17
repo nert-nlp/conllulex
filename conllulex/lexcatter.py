@@ -8,6 +8,8 @@ def supersenses_for_lexcat(lc, language=None):
             return PSS
         else:
             return NSS
+    if language in ["la"] and lc in ["ADJ.SUBST", "DET.SUBST"]:
+        return PSS
     if lc == "V" or lc.startswith("V."):
         if lc != "V":
             if language == "en":
@@ -99,6 +101,8 @@ ZH_LEXCATS = {
 LA_LEXCATS = BASE_LEXCATS | {
     "V.GER",
     "V.PART",
+    "ADJ.SUBST",  # "substantive" adjective like "bona"--should be annotated
+    "DET.SUBST",  # "substantive" determiner like "haec"
 }
 
 _language_map = {

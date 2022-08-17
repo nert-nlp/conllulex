@@ -72,6 +72,10 @@ def compute_lexcat_latin(t, tid, smweGroupToks, poses, rels):
                 return "V.GER"
         if upos == "ADP":
             return "P"
+        if upos == "ADJ":
+            return "ADJ.SUBST"
+        if upos == "DET":
+            return "DET.SUBST"
         return upos
     # End rule 3
 

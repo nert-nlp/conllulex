@@ -182,7 +182,10 @@ LANG_CFG = {
             ("ADV", "P"),
             ("SCONJ", "P"),
             ("PART", "POSS"),
+            # For Latin
             ("PART", "ADV"),  # for `non`
+            ("DET", "DET.SUBST"),
+            ("ADJ", "ADJ.SUBST"),
         },
         "mismatched_lexcat_exception_checks": [],
         "extra_prepositional_supersenses": set(),
