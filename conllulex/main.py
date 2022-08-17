@@ -28,7 +28,8 @@ def _layer_by_name(layers, name):
 @click.option("--token-layer-name", default="Tokens")
 @click.option("--ss1-layer-name", default="Scene Role")
 @click.option("--ss2-layer-name", default="Function")
-def glam2conllulex(input_filepath, output_filepath, text_layer_name, token_layer_name, ss1_layer_name, ss2_layer_name):
+@click.option("--translation-layer-name", default="Translation")
+def glam2conllulex(input_filepath, output_filepath, text_layer_name, token_layer_name, ss1_layer_name, ss2_layer_name, translation_layer_name):
     import json
 
     with open(input_filepath, "r") as f:
@@ -38,15 +39,19 @@ def glam2conllulex(input_filepath, output_filepath, text_layer_name, token_layer
     token_layer = _layer_by_name(text_layer["token-layers"], token_layer_name)
     ss1_layer = _layer_by_name(token_layer["span-layers"], ss1_layer_name)
     ss2_layer = _layer_by_name(token_layer["span-layers"], ss2_layer_name)
+    translation_layer = _layer_by_name(token_layer["span-layers"], translation_layer_name)
 
     text = text_layer["text"]["body"]
     text_lines = text.split("\n")
     tokens = sorted([t for t in token_layer["tokens"]], key=lambda t: t["begin"])
     ss1_spans = {s["tokens"][0]["id"]: s for s in ss1_layer["spans"] if s["value"] != ""}
     ss2_spans = {s["tokens"][0]["id"]: s for s in ss2_layer["spans"] if s["value"] != ""}
+    translation_spans = {s["tokens"][0]["id"]: s for s in translation_layer["spans"] if s["value"] != ""}
 
     # Begin constructing token-span bundles
     tokens_by_sentence = defaultdict(list)
+    token_to_sentence = {}
+    translations = defaultdict(list)
     for token in tokens:
         if token["value"].strip() == "":
             continue
@@ -55,12 +60,17 @@ def glam2conllulex(input_filepath, output_filepath, text_layer_name, token_layer
         token["ss1"] = ss1_spans[tid]["value"] if tid in ss1_spans and ss1_spans[tid]["value"] != "" else None
         token["ss2"] = ss2_spans[tid]["value"] if tid in ss2_spans and ss2_spans[tid]["value"] != "" else None
         tokens_by_sentence[s_index].append(token)
+        token_to_sentence[tid] = s_index
+    for tid, translation_span in translation_spans.items():
+        s_index = token_to_sentence[tid]
+        translations[s_index] = translation_span["value"]
 
     outlines = []
     outlines.append(f"# newdoc id = {doc_name}")
     for s_index, tokens in tokens_by_sentence.items():
         outlines.append(f"# sent_id = {doc_name}-{s_index + 1}")
         outlines.append(f"# text = {text_lines[s_index]}")
+        outlines.append(f"# translation = {translations[s_index]}")
         for i, token in enumerate(tokens):
             cols = ["_"] * 19
             cols[0] = f"{i + 1}"
